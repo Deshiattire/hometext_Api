@@ -26,6 +26,8 @@ class ProductAttributeListResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'attribute_id' => $this->attributes?->id,
+            'attribute_value_id' => $this->attribute_value?->id,
             'attribute_name' => $this->attributes?->name,
             'attribute_value' => $this->attribute_value?->name,
             'math_sign' => $this->attribute_math_sign,

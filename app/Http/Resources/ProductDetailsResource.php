@@ -64,7 +64,6 @@ class ProductDetailsResource extends JsonResource
             'created_by'=>$this->created_by,
             'updated_by'=>$this->updated_by,
             'primary_photo'=>ImageUploadManager::prepareImageUrl(ProductPhoto::THUMB_PHOTO_UPLOAD_PATH, $this->primary_photo?->photo),
-
             'attributes'=>ProductAttributeListResource::collection($this->product_attributes),
             'specifications'=>PrductSpecificationListResource::collection($this->product_specifications),
             'photos'=>ProductPhotoListResource::collection($this->photos),
