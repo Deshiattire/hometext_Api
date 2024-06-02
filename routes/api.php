@@ -155,7 +155,8 @@ Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
 Route::get('my-order', [OrderDetailsController::class, 'myorder']);
 // user
 Route::post('user-registration', [EcomUserController::class, 'registration']);
-Route::post('user-signup', [EcomUserController::class, 'signup']);
+Route::post('user-login', [EcomUserController::class, 'UserLogin']);
+// Route::post('user-signup', [EcomUserController::class, 'signup']);
 Route::get('my-profile', [EcomUserController::class, 'myprofile']);
 Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
 // Route::post('user-signout',[EcomUserController::class,'signout']);

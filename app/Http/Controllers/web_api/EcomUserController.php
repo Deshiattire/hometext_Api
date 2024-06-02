@@ -18,7 +18,7 @@ class EcomUserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['signup', 'myorder', 'registration', 'myprofile', 'updateprofile']]);
+        $this->middleware('auth:api', ['except' => ['signup', 'UserLogin', 'myorder', 'registration', 'myprofile', 'updateprofile']]);
     }
 
     // E-com user signup
@@ -30,7 +30,7 @@ class EcomUserController extends Controller
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
         }
-        // check valid user 
+        // check valid user
         $is_valid = Auth::attempt(['email' => $request->username, 'password' => $request->password]);
         if ($is_valid) {
             return response()->json(['status' => 200, 'message' => 'success', 'token' => $is_valid], 200);
@@ -55,7 +55,7 @@ class EcomUserController extends Controller
         $fields['first_name'] = 'required';
         // 'email' => 'email|unique:users|max:255',
         $fields['phone'] = 'required|unique:users|numeric|digits:11';
-        // $fields['is_subscribe'] = 'required'; 
+        // $fields['is_subscribe'] = 'required';
         $validator = Validator::make($request->all(), $fields, $messages);
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
@@ -67,7 +67,7 @@ class EcomUserController extends Controller
         $input['salt'] = rand(1111, 9999);
         // $input['username'] = $request->mobile_no;
         $input['password'] = Hash::make($input['password']);
-        // $input['created_at'] = date('Y-m-d H:i:s');     
+        // $input['created_at'] = date('Y-m-d H:i:s');
         if ($user = User::create($input)) {
             $token = Auth::attempt(['phone' => $request->phone, 'password' => $request->password]);
             if ($token) {
@@ -84,6 +84,45 @@ class EcomUserController extends Controller
             }
         } else {
             return response()->json(['status' => 500, 'message' => 'internal_server_err', 'error' => 'Internal Server Error'], 500);
+        }
+    }
+
+    public function UserLogin(Request $request)
+    {
+        // return response()->json(['success' => $request->all()], 200);
+        $messages = [
+            'conf_password.required' => 'The confirm password field is required.',
+            'conf_password.same' => 'Password and confirm password are not same.',
+        ];
+
+        $fields['email'] = 'required';
+        $fields['password'] = 'required|min:6|max:12';
+
+        // $fields['is_subscribe'] = 'required';
+
+        $validator = Validator::make($request->all(), $fields, $messages);
+        if ($validator->fails()) {
+            return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
+        }
+
+        $input = $request->all();
+        $user = (new User())->getUserEmailOrPhone($request->all());
+        $input['password'] = Hash::make($input['password']);
+
+        if ($user) {
+            if($user->role_id == 3 && Hash::check($request->input('password'), $user->password)){
+                $user_data['token'] = $user->createToken($user->email)->plainTextToken;
+                $user_data['name'] = $user->name;
+                $user_data['phone'] = $user->phone;
+                $user_data['photo'] = $user->photo;
+                $user_data['email'] = $user->email;
+                return response()->json($user_data);
+            }
+            else {
+                return response()->json(['status' => 500, 'message' => 'auth_err', 'error' => 'Authentication failed'], 500);
+            }
+        } else {
+            return response()->json(['status' => 500, 'message' => 'auth_err', 'error' => 'The Provided credentials are incorrect'], 500);
         }
     }
 
