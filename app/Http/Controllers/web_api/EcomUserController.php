@@ -89,18 +89,12 @@ class EcomUserController extends Controller
 
     public function UserLogin(Request $request)
     {
-        // return response()->json(['success' => $request->all()], 200);
-        $messages = [
-            'conf_password.required' => 'The confirm password field is required.',
-            'conf_password.same' => 'Password and confirm password are not same.',
-        ];
-
         $fields['email'] = 'required';
         $fields['password'] = 'required|min:6|max:12';
 
         // $fields['is_subscribe'] = 'required';
 
-        $validator = Validator::make($request->all(), $fields, $messages);
+        $validator = Validator::make($request->all(), $fields);
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
         }
