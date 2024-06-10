@@ -16,6 +16,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentGatewayController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
@@ -134,6 +135,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-add-product-data', [ProductController::class, 'get_add_product_data']);
     Route::get('products/{id}', [ProductController::class, 'show']);
 
+
 });
 
 Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
@@ -155,7 +157,8 @@ Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
 Route::get('my-order', [OrderDetailsController::class, 'myorder']);
 // user
 Route::post('user-registration', [EcomUserController::class, 'registration']);
-Route::post('user-signup', [EcomUserController::class, 'signup']);
+Route::post('user-login', [EcomUserController::class, 'UserLogin']);
+// Route::post('user-signup', [EcomUserController::class, 'signup']);
 Route::get('my-profile', [EcomUserController::class, 'myprofile']);
 Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
 // Route::post('user-signout',[EcomUserController::class,'signout']);
@@ -163,6 +166,8 @@ Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
 // Manage wishlist
 Route::post('wish-list', [WishListController::class, 'wishlist']);
 
-
 Route::apiResource('product', ProductController::class);
+
+////Payment Gateway
+Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
 
