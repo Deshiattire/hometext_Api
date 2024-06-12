@@ -165,6 +165,8 @@ Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
 
 // Manage wishlist
 Route::post('wish-list', [WishListController::class, 'wishlist']);
+Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
+Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
 
 Route::apiResource('product', ProductController::class);
 
