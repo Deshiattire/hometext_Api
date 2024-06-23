@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
 use App\Http\Resources\ProductDetailsResource;
-use App\Http\Resources\ProductListForBarCodeResource;
+use App\Http\Resources\ProductListResource;
 use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ChildSubCategory;
 use App\Models\Country;
 use App\Models\Product;
-use App\Http\Requests\StoreProductRequest;
-use App\Http\Requests\UpdateProductRequest;
-use App\Http\Resources\ProductListResource;
 use App\Models\ProductAttribute;
 use App\Models\ProductSpecification;
 use App\Models\Shop;
@@ -22,7 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ProductController extends Controller
@@ -128,6 +126,10 @@ class ProductController extends Controller
             'product_attributes.attributes',
             'product_attributes.attribute_value',
         ]);
+
+        Log::debug('====== Show ======');
+        Log::debug($productDetails);
+        Log::debug('====== *** ======');
 
         return new ProductDetailsResource($product);
     }
