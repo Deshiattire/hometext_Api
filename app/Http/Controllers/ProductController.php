@@ -127,10 +127,6 @@ class ProductController extends Controller
             'product_attributes.attribute_value',
         ]);
 
-        Log::debug('====== Show ======');
-        Log::debug($productDetails);
-        Log::debug('====== *** ======');
-
         return new ProductDetailsResource($product);
     }
 
