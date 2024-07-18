@@ -28,7 +28,11 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "classmap": [
+            "app/Manager/ImageuploadManager.php",
+            "app/Manager/ScriptManager.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
