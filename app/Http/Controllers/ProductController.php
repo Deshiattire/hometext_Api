@@ -62,7 +62,7 @@ class ProductController extends Controller
             'product_attributes.attributes',
             'product_attributes.attribute_value',
             'product_specifications.specifications'
-        ])->where('id', '=', $id)->first();
+        ])->where('id', $id)->first();
         return response()->json($products);
     }
 
@@ -126,10 +126,6 @@ class ProductController extends Controller
             'product_attributes.attributes',
             'product_attributes.attribute_value',
         ]);
-
-        Log::debug('====== Show ======');
-        Log::debug($productDetails);
-        Log::debug('====== *** ======');
 
         return new ProductDetailsResource($product);
     }
