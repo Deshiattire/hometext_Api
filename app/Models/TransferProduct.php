@@ -18,17 +18,17 @@ class TransferProduct extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->select(['id', 'name']);
     }
 
     public function fromShop()
     {
-        return $this->belongsTo(Shop::class, 'from_shop_id');
+        return $this->belongsTo(Shop::class, 'from_shop_id')->select(['id', 'name']);
     }
 
     public function toShop()
     {
-        return $this->belongsTo(Shop::class, 'to_shop_id');
+        return $this->belongsTo(Shop::class, 'to_shop_id')->select(['id', 'name']);
     }
 
     /**

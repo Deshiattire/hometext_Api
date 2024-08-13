@@ -144,6 +144,8 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         try {
+            Log::debug('Request');
+            Log::debug($request->all());
             DB::beginTransaction();
 
             // Update the basic product details if they are present in the request

@@ -35,7 +35,7 @@ class ProductTransferController extends Controller
      */
     public function index()
     {
-        $transfers = TransferProduct::all();
+        $transfers = TransferProduct::with('product','fromShop','toShop')->get();
 
         return response()->json(['data' => $transfers]);
     }
