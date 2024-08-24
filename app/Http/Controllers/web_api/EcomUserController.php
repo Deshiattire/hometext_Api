@@ -143,7 +143,6 @@ class EcomUserController extends Controller
 
         if($request->input('user_type') == 3){
             $user = (new User())->getUserEmailOrPhone($request->all());
-            Log::debug($user);
             $role = $request->input('user_type');
         }else{
             return response()->json([
