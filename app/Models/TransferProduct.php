@@ -12,6 +12,7 @@ class TransferProduct extends Model
         'product_id',
         'from_shop_id',
         'to_shop_id',
+        'attribute_id',
         'quantity',
         'status',
     ];
@@ -29,6 +30,11 @@ class TransferProduct extends Model
     public function toShop()
     {
         return $this->belongsTo(Shop::class, 'to_shop_id')->select(['id', 'name']);
+    }
+
+    public function attribute()
+    {
+        return $this->belongsTo(ProductAttribute::class, 'attribute_id')->with('attributes','attribute_value');
     }
 
     /**

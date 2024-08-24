@@ -19,6 +19,7 @@ class ProductTransferController extends Controller
             'product_id' => 'required|integer',
             'from_shop_id' => 'required|integer',
             'to_shop_id' => 'required|integer',
+            'attribute_id' => 'required|integer',
             'quantity' => 'required|integer',
         ]);
 
@@ -35,7 +36,7 @@ class ProductTransferController extends Controller
      */
     public function index()
     {
-        $transfers = TransferProduct::with('product','fromShop','toShop')->get();
+        $transfers = TransferProduct::with('product','fromShop','toShop','attribute')->get();
 
         return response()->json(['data' => $transfers]);
     }

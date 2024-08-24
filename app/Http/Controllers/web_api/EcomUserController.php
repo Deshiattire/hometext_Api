@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -18,7 +19,7 @@ class EcomUserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['signup', 'myorder', 'registration', 'myprofile', 'updateprofile']]);
+        $this->middleware('auth:api', ['except' => ['signup', 'UserLogin', 'myorder', 'registration', 'myprofile', 'updateprofile']]);
     }
 
     // E-com user signup
@@ -30,7 +31,7 @@ class EcomUserController extends Controller
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
         }
-        // check valid user 
+        // check valid user
         $is_valid = Auth::attempt(['email' => $request->username, 'password' => $request->password]);
         if ($is_valid) {
             return response()->json(['status' => 200, 'message' => 'success', 'token' => $is_valid], 200);
@@ -55,7 +56,7 @@ class EcomUserController extends Controller
         $fields['first_name'] = 'required';
         // 'email' => 'email|unique:users|max:255',
         $fields['phone'] = 'required|unique:users|numeric|digits:11';
-        // $fields['is_subscribe'] = 'required'; 
+        // $fields['is_subscribe'] = 'required';
         $validator = Validator::make($request->all(), $fields, $messages);
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
@@ -67,7 +68,7 @@ class EcomUserController extends Controller
         $input['salt'] = rand(1111, 9999);
         // $input['username'] = $request->mobile_no;
         $input['password'] = Hash::make($input['password']);
-        // $input['created_at'] = date('Y-m-d H:i:s');     
+        // $input['created_at'] = date('Y-m-d H:i:s');
         if ($user = User::create($input)) {
             $token = Auth::attempt(['phone' => $request->phone, 'password' => $request->password]);
             if ($token) {
@@ -117,6 +118,62 @@ class EcomUserController extends Controller
                 'status' => 'error',
                 'user' => [],
             ], 200);
+        }
+    }
+
+    public function UserLogin(Request $request)
+    {
+        $validator = Validator::make(
+            $request->only('email', 'password', 'user_type'),
+            [
+                'email' => 'required|max:50',
+                'password' => 'required|max:50',
+                'user_type' => 'required|numeric'
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation_err',
+                'error' => $validator->errors()
+            ],
+            400);
+        }
+
+        if($request->input('user_type') == 3){
+            $user = (new User())->getUserEmailOrPhone($request->all());
+            Log::debug($user);
+            $role = $request->input('user_type');
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Please provide valid information'
+            ],
+            400);
+        }
+
+        if($user && Hash::check($request->input('password'), $user->password)){
+            $user_data['token'] = $user->createToken($user->email)->plainTextToken;
+            $user_data['name'] = $user->name;
+            $user_data['phone'] = $user->phone;
+            $user_data['photo'] = $user->photo;
+            $user_data['email'] = $user->email;
+            $user_data['role'] = $role;
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully Login!',
+                'data' => [$user_data],
+                'error' => [
+                    'code' => 0
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Login credential is not valid.'
+            ],
+            400);
         }
     }
 }
