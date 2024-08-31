@@ -19,11 +19,11 @@ class ChildSubCategoryEditResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'sub_category_name' => $this->sub_category?->name,
+            'sub_category_id' => $this->sub_category?->id,
             'slug' => $this->slug,
             'description' => $this->description,
             'serial' => $this->serial,
-            'status' => $this->status == 1 ? 'Active' : 'Inactive',
+            'status' => $this->status,
             'photo_preview' => ImageUploadManager::prepareImageUrl(ChildSubCategory::THUMB_IMAGE_UPLOAD_PATH, $this->photo),
         ];
     }
