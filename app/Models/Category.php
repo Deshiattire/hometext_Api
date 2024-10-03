@@ -20,6 +20,7 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'image',
         'slug',
         'serial',
         'status',
@@ -68,5 +69,9 @@ class Category extends Model
     final public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function subCategories(){
+        return $this->hasMany(SubCategory::class);
     }
 }

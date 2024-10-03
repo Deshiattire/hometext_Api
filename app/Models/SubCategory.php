@@ -80,6 +80,10 @@ class SubCategory extends Model
     {
         return self::query()->where('status', self::STATUS_ACTIVE)->select('id', 'name')->get();
     }
+
+    public function childSubCategories(){
+        return $this->hasMany(ChildSubCategory::class);
+    }
 }
 
 

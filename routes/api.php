@@ -55,6 +55,8 @@ Route::get('divisions', [DivisionController::class, 'index']);
 Route::get('district/{division_id}', [DistrictController::class, 'index']);
 Route::get('area/{district_id}', [AreaController::class, 'index']);
 
+Route::get('product/menu', [ProductController::class, 'ProductMenu']);
+
 
 Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
