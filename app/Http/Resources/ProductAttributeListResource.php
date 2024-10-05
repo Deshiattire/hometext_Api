@@ -27,15 +27,15 @@ class ProductAttributeListResource extends JsonResource
         return [
             'id' => $this->id,
             'attribute_id' => $this->attributes?->id,
-            'attribute_value_id' => $this->attribute_value?->id,
+            'value_id' => $this->attribute_value?->id,
             'attribute_name' => $this->attributes?->name,
             'attribute_value' => $this->attribute_value?->name,
             'math_sign' => $this->attribute_math_sign,
             'number' => $this->attribute_number,
             'shop_quantities' => $formattedShopQuantities,
-            'weight' => $this->attribute_weight,
-            'measurement' => $this->attribute_measurement, // Corrected typo
-            'cost' => $this->attribute_cost,
+            'attribute_weight' => $this->attribute_weight,
+            'attribute_mesarment' => $this->attribute_mesarment, // Corrected typo
+            'attribute_cost' => $this->attribute_cost,
         ];
     }
 
@@ -53,7 +53,7 @@ class ProductAttributeListResource extends JsonResource
         } elseif (is_array($this->shop_quantities)) {
             $shopQuantities = $this->shop_quantities;
         } else {
-            Log::error('Unexpected type of shop_quantities.', ['shop_quantities' => $this->shop_quantities]);
+            // Log::error('Unexpected type of shop_quantities.', ['shop_quantities' => $this->shop_quantities]);
         }
 
         return $shopQuantities;

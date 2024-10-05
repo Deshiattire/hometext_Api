@@ -12,23 +12,29 @@ class TransferProduct extends Model
         'product_id',
         'from_shop_id',
         'to_shop_id',
+        'attribute_id',
         'quantity',
         'status',
     ];
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->select(['id', 'name']);
     }
 
     public function fromShop()
     {
-        return $this->belongsTo(Shop::class, 'from_shop_id');
+        return $this->belongsTo(Shop::class, 'from_shop_id')->select(['id', 'name']);
     }
 
     public function toShop()
     {
-        return $this->belongsTo(Shop::class, 'to_shop_id');
+        return $this->belongsTo(Shop::class, 'to_shop_id')->select(['id', 'name']);
+    }
+
+    public function attribute()
+    {
+        return $this->belongsTo(ProductAttribute::class, 'attribute_id')->with('attributes','attribute_value');
     }
 
     /**

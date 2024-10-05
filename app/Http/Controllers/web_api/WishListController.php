@@ -33,7 +33,7 @@ class WishListController extends Controller
             $customer = Customer::where('user_id', '=', Auth::user()->id)->first();
             $customer_id = 1;
             if ($customer)  $customer_id = $customer->id;
-            // check product have wishlist 
+            // check product have wishlist
             $is_exist = WishList::where('product_id', '=', $request->product_id)
                 ->where('customer_id', '=', $customer_id)->first();
 
@@ -49,7 +49,7 @@ class WishListController extends Controller
                 $is_exist->updated_by =  Auth::user()->id;
                 $is_exist->save();
             }
-            // get all active wishlist 
+            // get all active wishlist
             $total_wishlist = WishList::where('customer_id', '=', $customer_id)->where('is_wish', '=', 1)->count();
             return response()->json([
                 'status' => 'success',
@@ -59,6 +59,53 @@ class WishListController extends Controller
             return response()->json([
                 'status' => 'error',
                 'total_wishlist' => 0,
+            ], 200);
+        }
+    }
+
+    public function getWishlist(Request $request){
+        $customer = Customer::where('user_id', '=', Auth::user()->id)->first();
+        $wishlist = WishList::where('customer_id', '=', $customer->id)->where('is_wish', '=', 1)->get();
+
+        if($wishlist != null){
+            return response()->json([
+                'status' => true,
+                'wishlist' => $wishlist,
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'wishlist' => 'No data found',
+            ], 200);
+        }
+    }
+
+    public function deleteWishlist(Request $request){
+        $fields['product_id'] = 'required';
+        $validator = Validator::make($request->all(), $fields);
+        if ($validator->fails()) {
+            return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
+        }
+
+        $customer = Customer::where('user_id', '=', Auth::user()->id)->first();
+        $wishlist = WishList::where('customer_id', '=', $customer->id)
+                    ->where('is_wish', '=', 1)
+                    ->where('product_id', '=', $request->product_id)
+                    ->first();
+
+        if($wishlist != null){
+            $wishlist->update([
+                'is_wish' => 2,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'wishlist' => 'Wish list updated successfully',
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'wishlist' => 'No data found',
             ], 200);
         }
     }

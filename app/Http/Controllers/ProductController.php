@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
 use App\Http\Resources\ProductDetailsResource;
-use App\Http\Resources\ProductListForBarCodeResource;
+use App\Http\Resources\ProductListResource;
 use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ChildSubCategory;
 use App\Models\Country;
 use App\Models\Product;
-use App\Http\Requests\StoreProductRequest;
-use App\Http\Requests\UpdateProductRequest;
-use App\Http\Resources\ProductListResource;
 use App\Models\ProductAttribute;
+use App\Models\ProductSeoMetaData;
 use App\Models\ProductSpecification;
 use App\Models\Shop;
 use App\Models\SubCategory;
@@ -22,7 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ProductController extends Controller
@@ -33,6 +32,7 @@ class ProductController extends Controller
      */
     public function index(Request $request, $is_all = 'yes'): AnonymousResourceCollection
     {
+        // DB::enableQueryLog();
         $input = [
             'per_page' => $request->input('per_page'),
             'search' => $request->input('search'),
@@ -41,6 +41,7 @@ class ProductController extends Controller
         ];
 
         $products = (new Product())->getProductList($input, $is_all);
+        // dd(DB::getQueryLog());
         return ProductListResource::collection($products);
     }
 
@@ -63,8 +64,9 @@ class ProductController extends Controller
             'product_attributes',
             'product_attributes.attributes',
             'product_attributes.attribute_value',
-            'product_specifications.specifications'
-        ])->where('id', '=', $id)->first();
+            'product_specifications.specifications',
+            'seo_meta.seoMetaData'
+        ])->where('id', $id)->first();
         return response()->json($products);
     }
 
@@ -85,6 +87,10 @@ class ProductController extends Controller
 
             if ($request->has('specifications')) {
                 (new ProductSpecification())->storeProductSpecification($request->input('specifications'), $product);
+            }
+
+            if ($request->has('meta')) {
+                (new ProductSeoMetaData())->storeSeoMata($request->input('meta'), $product);
             }
 
             // Attach shops to the product
@@ -127,9 +133,10 @@ class ProductController extends Controller
             'product_attributes',
             'product_attributes.attributes',
             'product_attributes.attribute_value',
+            'seo_meta.seoMetaData'
         ]);
 
-        return new ProductDetailsResource($product);
+        return new ProductDetailsResource($productDetails);
     }
 
     /**
@@ -146,6 +153,8 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         try {
+            Log::debug('Request');
+            Log::debug($request->all());
             DB::beginTransaction();
 
             // Update the basic product details if they are present in the request
@@ -160,6 +169,10 @@ class ProductController extends Controller
             // Update specifications if provided
             if ($request->has('specifications')) {
                 (new ProductSpecification())->updateProductSpecification($request->input('specifications'), $product);
+            }
+
+            if ($request->has('meta')) {
+                (new ProductSeoMetaData())->updateSeoMata($request->input('meta'), $product);
             }
 
             if ($request->has('shop_ids') && $request->has('shop_quantities')) {
@@ -200,6 +213,8 @@ class ProductController extends Controller
 
             // 2. Delete product specifications
             $product->product_specifications()->delete();
+
+            $product->seo_meta()->delete();
 
             // 3. Delete product photos (assuming you have a 'photos' relationship)
             $product->photos()->delete();
@@ -303,5 +318,20 @@ class ProductController extends Controller
             'cls' => 'success',
             'product_id' => $newProduct->id
         ]);
+    }
+
+
+    public function ProductMenu(): JsonResponse
+    {
+        $product = Category::select('id', 'name', 'image')->with([
+            'subCategories' => function($query) {
+                $query->select('id', 'name', 'category_id'); // Don't forget to include the foreign key
+            },
+            'subCategories.childSubCategories' => function($query) {
+                $query->select('id', 'name', 'sub_category_id'); // Don't forget the foreign key here too
+            }
+        ])->get();
+        return response()->json($product);
+
     }
 }

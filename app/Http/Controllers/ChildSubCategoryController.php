@@ -100,7 +100,7 @@ class ChildSubCategoryController extends Controller
         if($request->has('photo')){
             $child_sub_category_data['photo']  = $this->processImageUpload($request->input('photo'),  $child_sub_category_data['slug'], $childSubCategory->photo);
         }
-        $child_sub_category_data->update($child_sub_category_data);
+        $childSubCategory->update($child_sub_category_data);
         return response()->json(['msg'=>'SUb Category Updated Successfully', 'cls' => 'success']);
     }
 
@@ -111,8 +111,8 @@ class ChildSubCategoryController extends Controller
     public function destroy(ChildSubCategory $childSubCategory):JsonResponse
     {
         if(!empty($childCubCategory->photo)){
-            ImageUploadManager::deletePhoto(ChildSubCategory::IMAGE_UPLOAD_PATH, $childCubCategory->photo);
-            ImageUploadManager::deletePhoto(ChildSubCategory::THUMB_IMAGE_UPLOAD_PATH, $childCubCategory->photo);
+            ImageUploadManager::deletePhoto(ChildSubCategory::IMAGE_UPLOAD_PATH, $childSubCategory->photo);
+            ImageUploadManager::deletePhoto(ChildSubCategory::THUMB_IMAGE_UPLOAD_PATH, $childSubCategory->photo);
         }
         $childSubCategory->delete();
         return response()->json(['msg'=>'Child Sub Category Deleted Successfully', 'cls' => 'warning']);
