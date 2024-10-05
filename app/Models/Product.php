@@ -206,6 +206,11 @@ class Product extends Model
         return $this->hasMany(ProductSpecification::class);
     }
 
+    public function seo_meta():HasMany
+    {
+        return $this->hasMany(ProductSeoMetaData::class, 'product_id');
+    }
+
     /**
      * Get products for bar codes with attributes.
      *
