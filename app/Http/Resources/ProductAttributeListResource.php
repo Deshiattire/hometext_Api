@@ -53,7 +53,7 @@ class ProductAttributeListResource extends JsonResource
         } elseif (is_array($this->shop_quantities)) {
             $shopQuantities = $this->shop_quantities;
         } else {
-            Log::error('Unexpected type of shop_quantities.', ['shop_quantities' => $this->shop_quantities]);
+            // Log::error('Unexpected type of shop_quantities.', ['shop_quantities' => $this->shop_quantities]);
         }
 
         return $shopQuantities;
