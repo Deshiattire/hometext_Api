@@ -42,6 +42,10 @@ use App\Http\Controllers\ProductTransferController;
 |
 */
 
+Route::get('/testing', function () {
+    return 'Hello World';
+});
+
 //post csv in folder
 Route::post('/save-csv', [CsvController::class, 'saveCsv']);
 

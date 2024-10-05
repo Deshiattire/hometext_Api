@@ -32,6 +32,7 @@ class ProductController extends Controller
      */
     public function index(Request $request, $is_all = 'yes'): AnonymousResourceCollection
     {
+        // DB::enableQueryLog();
         $input = [
             'per_page' => $request->input('per_page'),
             'search' => $request->input('search'),
@@ -40,6 +41,7 @@ class ProductController extends Controller
         ];
 
         $products = (new Product())->getProductList($input, $is_all);
+        // dd(DB::getQueryLog());
         return ProductListResource::collection($products);
     }
 

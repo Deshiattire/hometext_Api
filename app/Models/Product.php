@@ -138,19 +138,29 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function categoryRelation()
+    {
+        return $this->belongsTo(Category::class);
+
+    }
+
     /**
      * @return BelongsTo
      */
     public function sub_category():BelongsTo
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
-    } /**
- * @return BelongsTo
- */
+    }
+
+    /**
+     * @return BelongsTo
+     */
     public function child_sub_category():BelongsTo
     {
         return $this->belongsTo(ChildSubCategory::class, 'child_sub_category_id');
     }
+
     /**
      * @return BelongsTo
      */
