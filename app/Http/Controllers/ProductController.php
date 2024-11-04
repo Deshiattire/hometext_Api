@@ -321,17 +321,17 @@ class ProductController extends Controller
     }
 
 
-    public function ProductMenu(): JsonResponse
-    {
-        $product = Category::select('id', 'name', 'image')->with([
-            'subCategories' => function($query) {
-                $query->select('id', 'name', 'category_id'); // Don't forget to include the foreign key
-            },
-            'subCategories.childSubCategories' => function($query) {
-                $query->select('id', 'name', 'sub_category_id'); // Don't forget the foreign key here too
-            }
-        ])->get();
-        return response()->json($product);
+    // public function ProductMenu(): JsonResponse
+    // {
+    //     $product = Category::select('id', 'name', 'image')->with([
+    //         'subCategories' => function($query) {
+    //             $query->select('id', 'name', 'category_id'); // Don't forget to include the foreign key
+    //         },
+    //         'subCategories.childSubCategories' => function($query) {
+    //             $query->select('id', 'name', 'sub_category_id'); // Don't forget the foreign key here too
+    //         }
+    //     ])->get();
+    //     return response()->json($product);
 
-    }
+    // }
 }

@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('product_menus', function (Blueprint $table) {
             $table->id();
-            $table->string('menu_type')->nullable()->comment('Horizontal, Vertical');
+            $table->enum('menu_type', ['Horizontal', 'Vertical'])->default('Horizontal');
             $table->string('name')->nullable();
             $table->string('image')->nullable();
-            $table->string('parent_id')->nullable();
-            $table->string('child_id')->nullable();
+            $table->bigInteger('parent_id')->default(0);
+            $table->bigInteger('child_id')->default(0);
             $table->string('link')->nullable();
+            $table->bigInteger('sl')->default(0)->comment('menu serial');
             $table->timestamps();
         });
     }
