@@ -19,6 +19,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentGatewayController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductMenuController;
 use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\SalesManagerController;
 use App\Http\Controllers\ShopController;
@@ -60,6 +61,7 @@ Route::get('district/{division_id}', [DistrictController::class, 'index']);
 Route::get('area/{district_id}', [AreaController::class, 'index']);
 
 Route::get('product/menu', [ProductController::class, 'ProductMenu']);
+Route::get('product/{category}/{subcategory?}/{childSubCategorie?}', [ProductMenuController::class, 'EcommerceProductMenu']);
 
 
 Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
