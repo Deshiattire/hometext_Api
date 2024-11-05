@@ -20,14 +20,39 @@ class ProductMenuController extends Controller
 
     }
 
-    public function EcommerceProductMenu($category, $subcategory = null, $childSubCategorie = null)
+    public function EcommerceProductMenu($type, $category, $subcategory = null, $childSubCategorie = null)
     {
-        $menu = Product::whereIn('id',[29,379,320])->get();
-        $menu2 = Product::whereIn('category_id',[12])->get();
-        $marge = $menu->merge($menu2);
+        $ProductMenu = null;
+        if($category != null && $subcategory == null && $childSubCategorie == null){
+            $ProductMenu = ProductMenu::where('menu_type', $type)
+                            ->where('name', $category)
+                            ->where('parent_id', 0)
+                            ->where('child_id', 0)
+                            ->first();
+        }elseif($category != null && $subcategory != null && $childSubCategorie == null){
+            $ProductMenu = ProductMenu::where('menu_type', $type)
+                            ->where('name', $subcategory)
+                            ->where('parent_id','>', 0)
+                            ->where('child_id', 0)
+                            ->first();
+
+        }else{
+            $ProductMenu = ProductMenu::where('menu_type', $type)
+                            ->where('name', $childSubCategorie)
+                            ->where('parent_id','>', 0)
+                            ->where('child_id','>', 0)
+                            ->first();
+
+        }
+        $productLink = json_decode($ProductMenu->link);
+
+
+        // $menu = Product::whereIn('id',[29,379,320])->get();
+        // $menu2 = Product::whereIn('category_id',[12])->get();
+        // $marge = $menu->merge($menu2);
         // $menu = [$category, $subcategory, $childSubCategorie];
 
-        return response()->json($marge);
+        return response()->json($productLink->product_id);
     }
 
     public function ProductMenu(): JsonResponse

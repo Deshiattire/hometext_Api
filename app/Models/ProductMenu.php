@@ -16,4 +16,8 @@ class ProductMenu extends Model
         'child_id',
         'link'
     ];
+
+    // protected $casts = [
+    //     'link' => 'json'
+    // ];
 }
