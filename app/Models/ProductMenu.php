@@ -14,10 +14,7 @@ class ProductMenu extends Model
         'image',
         'parent_id',
         'child_id',
-        'link'
+        'link',
+        'sl'
     ];
-
-    // protected $casts = [
-    //     'link' => 'json'
-    // ];
 }

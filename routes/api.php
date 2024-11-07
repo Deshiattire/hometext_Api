@@ -96,6 +96,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::apiResource('order', OrderController::class);
     Route::get('get-payment-methods', [PaymentMethodController::class, 'index']);
     Route::get('products/{id}', [ProductController::class, 'show']);
+
 });
 
 
@@ -141,7 +142,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-reports', [ReportController::class, 'index']);
     Route::get('get-add-product-data', [ProductController::class, 'get_add_product_data']);
     Route::get('products/{id}', [ProductController::class, 'show']);
-
+    Route::post('product-menu-generate', [ProductMenuController::class, 'MenuGenerate']);
 
 });
 

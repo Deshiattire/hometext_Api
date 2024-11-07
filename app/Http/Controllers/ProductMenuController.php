@@ -17,6 +17,25 @@ class ProductMenuController extends Controller
 
     public function MenuGenerate(Request $request)
     {
+        // dd($request->all());
+        try{
+            $data = [
+                'menu_type'=> $request->menuType,
+                'name'=> $request->name,
+                'image'=> $request->image,
+                'parent_id'=> $request->parentId,
+                'child_id'=> $request->childId,
+                'link'=> json_encode($request->link),
+                'sl'=> $request->sl
+            ];
+
+            $pro = ProductMenu::create($data);
+
+            return response()->json(['message' => 'Data inserted successfully']);
+        }catch(\Exception $e){
+            info("MenuGenerate_FAILED", ['data' => $request->all(), 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'MenuGenerate_FAILED']);
+        }
 
     }
 
@@ -52,7 +71,7 @@ class ProductMenuController extends Controller
         // $marge = $menu->merge($menu2);
         // $menu = [$category, $subcategory, $childSubCategorie];
 
-        return response()->json($productLink->product_id);
+        return response()->json($productLink->chilSubCategory);
     }
 
     public function ProductMenu(): JsonResponse
