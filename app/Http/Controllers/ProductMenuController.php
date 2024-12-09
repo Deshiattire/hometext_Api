@@ -36,7 +36,6 @@ class ProductMenuController extends Controller
             info("MenuGenerate_FAILED", ['data' => $request->all(), 'error' => $e->getMessage()]);
             return response()->json(['message' => 'MenuGenerate_FAILED']);
         }
-
     }
 
     public function EcommerceProductMenu($type, $category, $subcategory = null, $childSubCategorie = null)
@@ -54,14 +53,12 @@ class ProductMenuController extends Controller
                             ->where('parent_id','>', 0)
                             ->where('child_id', 0)
                             ->first();
-
         }else{
             $ProductMenu = ProductMenu::where('menu_type', $type)
                             ->where('name', $childSubCategorie)
                             ->where('parent_id','>', 0)
                             ->where('child_id','>', 0)
                             ->first();
-
         }
         $productLink = json_decode($ProductMenu->link);
 
@@ -74,21 +71,20 @@ class ProductMenuController extends Controller
         return response()->json($productLink->chilSubCategory);
     }
 
-    public function ProductMenu(): JsonResponse
+    public function ProductMenu($menuType): JsonResponse
     {
-        $category = ProductMenu::where('menu_type', 'Horizontal')
+        $category = ProductMenu::where('menu_type', $menuType)
                 ->where('parent_id', 0)
                 ->where('child_id', 0)
                 ->orderBy('sl')->get();
-        $subcategory = ProductMenu::where('menu_type', 'Horizontal')
+        $subcategory = ProductMenu::where('menu_type', $menuType)
                 ->where('parent_id', '>', 0)
                 ->where('child_id', 0)
                 ->orderBy('sl')->get();
-        $chilsubcategory = ProductMenu::where('menu_type', 'Horizontal')
+        $chilsubcategory = ProductMenu::where('menu_type', $menuType)
                 ->where('parent_id', '>', 0)
                 ->where('child_id','>', 0)
                 ->orderBy('sl')->get();
-
         $data = [];
 
         foreach ($category as $p) {
@@ -121,11 +117,8 @@ class ProductMenuController extends Controller
                     $x['sub'][] = $subItem; // Add each subcategory to the 'sub' array
                 }
             }
-
             $data[] = $x; // Add the category item to the main data array
         }
-
         return response()->json($data);
     }
-
 }
