@@ -60,18 +60,26 @@ class ProductMenuController extends Controller
                             ->where('child_id','>', 0)
                             ->first();
         }
+
         $productLink = json_decode($ProductMenu->link);
 
+        $product = explode(",", $productLink->productId);
+        $category_item = explode(",", $productLink->category);
+        $sub_category_item = explode(",", $productLink->subCategory);
+        $child_sub_category_item = explode(",", $productLink->chilSubCategory);
 
-        // $menu = Product::whereIn('id',[29,379,320])->get();
-        // $menu2 = Product::whereIn('category_id',[12])->get();
-        // $marge = $menu->merge($menu2);
+        $menu_product = Product::whereIn('id', $product)->get();
+        $menu_category = Product::whereIn('category_id', $category_item)->get();
+        $menu_sub_category = Product::whereIn('sub_category_id', $sub_category_item)->get();
+        $menu_child_sub_category = Product::whereIn('child_sub_category_id', $child_sub_category_item)->get();
+
+        $marge = $menu_product->merge($menu_category);
         // $menu = [$category, $subcategory, $childSubCategorie];
 
-        return response()->json($productLink->chilSubCategory);
+        return response()->json(['data' => $marge]);
     }
 
-    public function ProductMenu($menuType): JsonResponse
+    public function DynamicProductMenu($menuType): JsonResponse
     {
         $category = ProductMenu::where('menu_type', $menuType)
                 ->where('parent_id', 0)
@@ -119,6 +127,6 @@ class ProductMenuController extends Controller
             }
             $data[] = $x; // Add the category item to the main data array
         }
-        return response()->json($data);
+        return response()->json(['data' => $data]);
     }
 }

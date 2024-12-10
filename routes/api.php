@@ -60,7 +60,7 @@ Route::get('divisions', [DivisionController::class, 'index']);
 Route::get('district/{division_id}', [DistrictController::class, 'index']);
 Route::get('area/{district_id}', [AreaController::class, 'index']);
 
-Route::get('product-menu/{menuType}', [ProductMenuController::class, 'ProductMenu']);
+Route::get('product-menu/{menuType}', [ProductMenuController::class, 'DynamicProductMenu']);
 Route::get('product/{type}/{category}/{subcategory?}/{childSubCategorie?}', [ProductMenuController::class, 'EcommerceProductMenu']);
 
 
