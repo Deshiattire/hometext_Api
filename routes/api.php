@@ -61,7 +61,8 @@ Route::get('district/{division_id}', [DistrictController::class, 'index']);
 Route::get('area/{district_id}', [AreaController::class, 'index']);
 
 Route::get('product-menu/{menuType}', [ProductMenuController::class, 'DynamicProductMenu']);
-Route::get('product/{type}/{category}/{subcategory?}/{childSubCategorie?}', [ProductMenuController::class, 'EcommerceProductMenu']);
+Route::get('product/{type}/{menuId}', [ProductMenuController::class, 'EcommerceProductMenu']);
+Route::get('product/{mode}', [ProductMenuController::class, 'EcommerceProductMode']);
 
 
 Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {

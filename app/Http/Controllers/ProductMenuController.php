@@ -17,7 +17,6 @@ class ProductMenuController extends Controller
 
     public function MenuGenerate(Request $request)
     {
-        // dd($request->all());
         try{
             $data = [
                 'menu_type'=> $request->menuType,
@@ -38,27 +37,20 @@ class ProductMenuController extends Controller
         }
     }
 
-    public function EcommerceProductMenu($type, $category, $subcategory = null, $childSubCategorie = null)
+    public function EcommerceProductMenu($type, $menuId)
     {
         $ProductMenu = null;
-        if($category != null && $subcategory == null && $childSubCategorie == null){
+        if($menuId != null){
             $ProductMenu = ProductMenu::where('menu_type', $type)
-                            ->where('name', $category)
-                            ->where('parent_id', 0)
-                            ->where('child_id', 0)
+                            ->where('id', $menuId)
                             ->first();
-        }elseif($category != null && $subcategory != null && $childSubCategorie == null){
-            $ProductMenu = ProductMenu::where('menu_type', $type)
-                            ->where('name', $subcategory)
-                            ->where('parent_id','>', 0)
-                            ->where('child_id', 0)
-                            ->first();
-        }else{
-            $ProductMenu = ProductMenu::where('menu_type', $type)
-                            ->where('name', $childSubCategorie)
-                            ->where('parent_id','>', 0)
-                            ->where('child_id','>', 0)
-                            ->first();
+        }
+
+        if($ProductMenu == null){
+            return response()->json([
+                'messsage' => "No data found",
+                'data' => []
+            ]);
         }
 
         $productLink = json_decode($ProductMenu->link);
@@ -74,12 +66,16 @@ class ProductMenuController extends Controller
         $menu_child_sub_category = Product::whereIn('child_sub_category_id', $child_sub_category_item)->get();
 
         $marge = $menu_product->merge($menu_category);
-        // $menu = [$category, $subcategory, $childSubCategorie];
+        $marge_sub = $marge->merge($menu_sub_category);
+        $marge_child_sub = $marge_sub->merge($menu_child_sub_category);
 
-        return response()->json(['data' => $marge]);
+        return response()->json([
+            'message' => "Successfully data found",
+            'data' => $marge_child_sub
+        ]);
     }
 
-    public function DynamicProductMenu($menuType): JsonResponse
+    public function DynamicProductMenu($menuType)
     {
         $category = ProductMenu::where('menu_type', $menuType)
                 ->where('parent_id', 0)
@@ -128,5 +124,27 @@ class ProductMenuController extends Controller
             $data[] = $x; // Add the category item to the main data array
         }
         return response()->json(['data' => $data]);
+    }
+
+    public function EcommerceProductMode($mode){
+        $productMode = null;
+        if($mode != null){
+            $productMode = ProductMenu::where('name', $mode)
+                            ->where('menu_type', 'Others')
+                            ->where('sl', '!=', 0)
+                            ->first();
+        }
+
+        if($productMode == null){
+            return response()->json([
+                'messsage' => "No data found",
+                'data' => []
+            ]);
+        }
+
+        $productLink = json_decode($productMode->link);
+        $product = explode(",", $productLink->productId);
+        $menu_product = Product::whereIn('id', $product)->get();
+        return response()->json(['data' => $menu_product]);
     }
 }
