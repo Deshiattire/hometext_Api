@@ -144,6 +144,9 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-add-product-data', [ProductController::class, 'get_add_product_data']);
     Route::get('products/{id}', [ProductController::class, 'show']);
     Route::post('product-menu-generate', [ProductMenuController::class, 'MenuGenerate']);
+    Route::get('product-menu-list', [ProductMenuController::class, 'MenuList']);
+    Route::get('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListEdit']);
+    Route::put('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListUpdate']);
 
 });
 

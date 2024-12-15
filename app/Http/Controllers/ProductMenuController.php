@@ -37,6 +37,54 @@ class ProductMenuController extends Controller
         }
     }
 
+    public function MenuList(){
+        $ProductMenu = ProductMenu::where('menu_type', '!=' ,'Others')
+                            ->where('sl', '!=', 0)
+                            ->get();
+
+        if($ProductMenu != null){
+            return response()->json([
+                'messsage' => "Successfully data found",
+                'data' => $ProductMenu
+            ]);
+        }else{
+            return response()->json([
+                'messsage' => "No data found",
+                'data' => []
+            ]);
+        }
+    }
+
+    public function MenuListEdit(ProductMenu $productMenu){
+
+        if($productMenu != null){
+            return response()->json([
+                'messsage' => "Successfully data found",
+                'data' => $productMenu
+            ]);
+        }else{
+            return response()->json([
+                'messsage' => "No data found",
+                'data' => []
+            ]);
+        }
+    }
+
+    public function MenuListUpdate(Request $request, ProductMenu $productMenu){
+
+        if($productMenu != null){
+            return response()->json([
+                'messsage' => "Successfully data found",
+                'data' => $productMenu
+            ]);
+        }else{
+            return response()->json([
+                'messsage' => "No data found",
+                'data' => []
+            ]);
+        }
+    }
+
     public function EcommerceProductMenu($type, $menuId)
     {
         $ProductMenu = null;
