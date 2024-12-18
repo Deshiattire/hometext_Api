@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductListResource;
+use App\Manager\ImageUploadManager;
 use App\Models\Category;
+use App\Models\ChildSubCategory;
 use App\Models\Product;
 use App\Models\ProductMenu;
+use App\Models\ProductPhoto;
+use App\Models\SubCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+use function PHPUnit\Framework\isNull;
 
 class ProductMenuController extends Controller
 {
@@ -101,13 +109,16 @@ class ProductMenuController extends Controller
             ]);
         }
 
-        $productLink = json_decode($ProductMenu->link);
-        if($productLink){
+        $productLink = json_decode($ProductMenu->link, true);
+
+        if(count($productLink) === 0){
             return response()->json([
                 'messsage' => "No link data found",
                 'data' => []
             ]);
         }
+
+        Log::info(empty($productLink['productId']));
 
         $menu_product = null;
         $menu_category = null;
@@ -115,23 +126,23 @@ class ProductMenuController extends Controller
         $menu_child_sub_category = null;
         $product_data = null;
 
-        if(isset($productLink->productId)){
-            $product = explode(",", $productLink->productId);
+        if(!empty($productLink['productId'])){
+            $product = explode(",", $productLink['productId']);
             $menu_product = Product::whereIn('id', $product)->get();
         }
 
-        if(isset($productLink->category)){
-            $category_item = explode(",", $productLink->category);
+        if(!empty($productLink['category'])){
+            $category_item = explode(",", $productLink['category']);
             $menu_category = Product::whereIn('category_id', $category_item)->get();
         }
 
-        if(isset($productLink->subCategory)){
-            $sub_category_item = explode(",", $productLink->subCategory);
+        if(!empty($productLink['subCategory'])){
+            $sub_category_item = explode(",", $productLink['subCategory']);
             $menu_sub_category = Product::whereIn('sub_category_id', $sub_category_item)->get();
         }
 
-        if(isset($productLink->chilSubCategory)){
-            $child_sub_category_item = explode(",", $productLink->chilSubCategory);
+        if(!empty($productLink['chilSubCategory'])){
+            $child_sub_category_item = explode(",", $productLink['chilSubCategory']);
             $menu_child_sub_category = Product::whereIn('child_sub_category_id', $child_sub_category_item)->get();
         }
 
@@ -169,7 +180,7 @@ class ProductMenuController extends Controller
 
         return response()->json([
             'message' => "Successfully data found",
-            'data' => $product_data
+            'data' => $product_data != null ? ProductListResource::collection($product_data) : []
         ]);
     }
 
@@ -193,7 +204,7 @@ class ProductMenuController extends Controller
             $x = [
                 'id' => $p->id,
                 'name' => $p->name,
-                'image' => $p->image,
+                'image' => ImageUploadManager::prepareImageUrl(Category::THUMB_IMAGE_UPLOAD_PATH, $p->image),
                 'sub' => [] // Initialize 'sub' as an empty array
             ];
 
@@ -202,7 +213,7 @@ class ProductMenuController extends Controller
                     $subItem = [
                         'id' => $s->id,
                         'name' => $s->name,
-                        'image' => $s->image,
+                        'image' => ImageUploadManager::prepareImageUrl(SubCategory::THUMB_IMAGE_UPLOAD_PATH, $s->image),
                         'child' => [] // Initialize 'child' as an empty array
                     ];
 
@@ -211,7 +222,7 @@ class ProductMenuController extends Controller
                             $subItem['child'][] = [
                                 'id' => $c->id,
                                 'name' => $c->name,
-                                'image' => $c->image
+                                'image' => ImageUploadManager::prepareImageUrl(ChildSubCategory::THUMB_IMAGE_UPLOAD_PATH, $c->image)
                             ];
                         }
                     }
@@ -245,6 +256,71 @@ class ProductMenuController extends Controller
         return response()->json([
             'messsage' => "Successfully data found",
             'data' => $productMode
+        ]);
+    }
+
+    public function EcommerceBannerSlider(){
+        $banner[] = [
+            "button_text" => "Go To Shop",
+            "button_Link" => "",
+            "left" => [
+                "background_color" => "",
+                "text" => "",
+                "image" => ""
+            ],
+            "meddle" => [
+                "Header" => "",
+                "title" => "",
+                "description" => ""
+            ],
+            "right" => [
+                "background_color" => "",
+                "text" => "",
+                "image" => ""
+            ]
+        ];
+        $banner[] = [
+           "button_text" => "Go To Shop",
+            "button_Link" => "",
+            "left" => [
+                "background_color" => "",
+                "text" => "",
+                "image" => ""
+            ],
+            "meddle" => [
+                "Header" => "",
+                "title" => "",
+                "description" => ""
+            ],
+            "right" => [
+                "background_color" => "",
+                "text" => "",
+                "image" => ""
+            ]
+        ];
+        $banner[] = [
+            "button_text" => "Go To Shop",
+            "button_Link" => "",
+            "left" => [
+                "background_color" => "",
+                "text" => "",
+                "image" => ""
+            ],
+            "meddle" => [
+                "Header" => "",
+                "title" => "",
+                "description" => ""
+            ],
+            "right" => [
+                "background_color" => "",
+                "text" => "",
+                "image" => ""
+            ]
+        ];
+
+        return response()->json([
+            'messsage' => "Successfully data found",
+            'data' => $banner
         ]);
     }
 }

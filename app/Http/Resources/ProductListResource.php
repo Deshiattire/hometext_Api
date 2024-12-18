@@ -28,6 +28,7 @@ class ProductListResource extends JsonResource
             'original_price'=>$this->price,
             'price_formula'=>$this->price_formula,
             'field_limit'=>$this->field_limit,
+            'star' => rand(1,5),
             'sell_price'=>PriceManager::calculate_sell_price($this->price, $this->discount_percent, $this->discount_fixed, $this->discount_start, $this->discount_end ),
             'sku'=>$this->sku,
             'stock'=>$this->stock,
