@@ -65,6 +65,41 @@ Route::get('product/{type}/{menuId}', [ProductMenuController::class, 'EcommerceP
 Route::get('product/{mode}', [ProductMenuController::class, 'EcommerceProductMode']);
 
 
+Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
+// for check out
+
+Route::post('check-out', [CheckOutController::class, 'checkout']);
+Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
+// Route::get('my-order', [CheckOutController::class, 'myorder']);
+Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
+Route::post('payment-success', [PaymentController::class, 'paymentsuccess']);
+Route::get('payment-cancel', [PaymentController::class, 'paymentcancel']);
+Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
+
+// order details
+Route::get('my-order', [OrderDetailsController::class, 'myorder']);
+// user
+Route::post('user-registration', [EcomUserController::class, 'registration']);
+Route::post('user-login', [EcomUserController::class, 'UserLogin']);
+// Route::post('user-signup', [EcomUserController::class, 'signup']);
+Route::get('my-profile', [EcomUserController::class, 'myprofile']);
+Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+// Route::post('user-signout',[EcomUserController::class,'signout']);
+
+// Manage wishlist
+Route::post('wish-list', [WishListController::class, 'wishlist']);
+Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
+Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
+
+Route::apiResource('product', ProductController::class);
+
+////Payment Gateway
+Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
+
+Route::middleware(['auth:api'])->post('/admin', function () {
+    // Route logic here
+});
+
 Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('get-attribute-list', [AttributeController::class, 'get_attribute_list']);
@@ -150,38 +185,4 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
 
 });
 
-Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
-// for check out
-
-Route::middleware(['auth:api'])->post('/admin', function () {
-    // Route logic here
-});
-
-Route::post('check-out', [CheckOutController::class, 'checkout']);
-Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
-// Route::get('my-order', [CheckOutController::class, 'myorder']);
-Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
-Route::post('payment-success', [PaymentController::class, 'paymentsuccess']);
-Route::get('payment-cancel', [PaymentController::class, 'paymentcancel']);
-Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
-
-// order details
-Route::get('my-order', [OrderDetailsController::class, 'myorder']);
-// user
-Route::post('user-registration', [EcomUserController::class, 'registration']);
-Route::post('user-login', [EcomUserController::class, 'UserLogin']);
-// Route::post('user-signup', [EcomUserController::class, 'signup']);
-Route::get('my-profile', [EcomUserController::class, 'myprofile']);
-Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
-// Route::post('user-signout',[EcomUserController::class,'signout']);
-
-// Manage wishlist
-Route::post('wish-list', [WishListController::class, 'wishlist']);
-Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
-Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
-
-Route::apiResource('product', ProductController::class);
-
-////Payment Gateway
-Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
 

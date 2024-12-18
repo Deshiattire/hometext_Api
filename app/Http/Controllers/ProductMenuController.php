@@ -102,24 +102,74 @@ class ProductMenuController extends Controller
         }
 
         $productLink = json_decode($ProductMenu->link);
+        if($productLink){
+            return response()->json([
+                'messsage' => "No link data found",
+                'data' => []
+            ]);
+        }
 
-        $product = explode(",", $productLink->productId);
-        $category_item = explode(",", $productLink->category);
-        $sub_category_item = explode(",", $productLink->subCategory);
-        $child_sub_category_item = explode(",", $productLink->chilSubCategory);
+        $menu_product = null;
+        $menu_category = null;
+        $menu_sub_category = null;
+        $menu_child_sub_category = null;
+        $product_data = null;
 
-        $menu_product = Product::whereIn('id', $product)->get();
-        $menu_category = Product::whereIn('category_id', $category_item)->get();
-        $menu_sub_category = Product::whereIn('sub_category_id', $sub_category_item)->get();
-        $menu_child_sub_category = Product::whereIn('child_sub_category_id', $child_sub_category_item)->get();
+        if(isset($productLink->productId)){
+            $product = explode(",", $productLink->productId);
+            $menu_product = Product::whereIn('id', $product)->get();
+        }
 
-        $marge = $menu_product->merge($menu_category);
-        $marge_sub = $marge->merge($menu_sub_category);
-        $marge_child_sub = $marge_sub->merge($menu_child_sub_category);
+        if(isset($productLink->category)){
+            $category_item = explode(",", $productLink->category);
+            $menu_category = Product::whereIn('category_id', $category_item)->get();
+        }
+
+        if(isset($productLink->subCategory)){
+            $sub_category_item = explode(",", $productLink->subCategory);
+            $menu_sub_category = Product::whereIn('sub_category_id', $sub_category_item)->get();
+        }
+
+        if(isset($productLink->chilSubCategory)){
+            $child_sub_category_item = explode(",", $productLink->chilSubCategory);
+            $menu_child_sub_category = Product::whereIn('child_sub_category_id', $child_sub_category_item)->get();
+        }
+
+        if($menu_product != null &&
+            $menu_category == null &&
+            $menu_sub_category == null &&
+            $menu_child_sub_category == null
+        ){
+            $product_data = $menu_product;
+        }elseif(
+            $menu_product != null &&
+            $menu_category != null &&
+            $menu_sub_category == null &&
+            $menu_child_sub_category == null
+        ){
+            $product_data = $menu_product->merge($menu_category);
+        }elseif(
+            $menu_product != null &&
+            $menu_category != null &&
+            $menu_sub_category != null &&
+            $menu_child_sub_category == null
+        ){
+            $marge = $menu_product->merge($menu_category);
+            $product_data = $marge->merge($menu_sub_category);
+        }elseif(
+            $menu_product != null &&
+            $menu_category != null &&
+            $menu_sub_category != null &&
+            $menu_child_sub_category != null
+        ){
+            $marge = $menu_product->merge($menu_category);
+            $marge_sub = $marge->merge($menu_sub_category);
+            $product_data = $marge_sub->merge($menu_child_sub_category);
+        }
 
         return response()->json([
             'message' => "Successfully data found",
-            'data' => $marge_child_sub
+            'data' => $product_data
         ]);
     }
 
@@ -176,11 +226,13 @@ class ProductMenuController extends Controller
 
     public function EcommerceProductMode($mode){
         $productMode = null;
-        if($mode != null){
-            $productMode = ProductMenu::where('name', $mode)
-                            ->where('menu_type', 'Others')
-                            ->where('sl', '!=', 0)
-                            ->first();
+        switch($mode){
+            case "featured":
+                $productMode = Product::where('isFeatured', 1)->get();
+            case "new":
+                $productMode = Product::where('isNew', 1)->get();
+            case "trending":
+                $productMode = Product::where('isTrending', 1)->get();
         }
 
         if($productMode == null){
@@ -190,9 +242,9 @@ class ProductMenuController extends Controller
             ]);
         }
 
-        $productLink = json_decode($productMode->link);
-        $product = explode(",", $productLink->productId);
-        $menu_product = Product::whereIn('id', $product)->get();
-        return response()->json(['data' => $menu_product]);
+        return response()->json([
+            'messsage' => "Successfully data found",
+            'data' => $productMode
+        ]);
     }
 }
