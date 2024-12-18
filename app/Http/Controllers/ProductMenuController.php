@@ -255,7 +255,7 @@ class ProductMenuController extends Controller
 
         return response()->json([
             'messsage' => "Successfully data found",
-            'data' => $productMode
+            'data' => $productMode != null ? ProductListResource::collection($productMode) : []
         ]);
     }
 
