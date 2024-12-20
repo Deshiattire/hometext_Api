@@ -118,13 +118,12 @@ class ProductMenuController extends Controller
             ]);
         }
 
-        Log::info(empty($productLink['productId']));
-
-        $menu_product = null;
-        $menu_category = null;
-        $menu_sub_category = null;
-        $menu_child_sub_category = null;
-        $product_data = null;
+        // Initialize variables
+        $menu_product = collect();
+        $menu_category = collect();
+        $menu_sub_category = collect();
+        $menu_child_sub_category = collect();
+        $product_data = collect();
 
         if(!empty($productLink['productId'])){
             $product = explode(",", $productLink['productId']);
@@ -146,40 +145,21 @@ class ProductMenuController extends Controller
             $menu_child_sub_category = Product::whereIn('child_sub_category_id', $child_sub_category_item)->get();
         }
 
-        if($menu_product != null &&
-            $menu_category == null &&
-            $menu_sub_category == null &&
-            $menu_child_sub_category == null
-        ){
-            $product_data = $menu_product;
-        }elseif(
-            $menu_product != null &&
-            $menu_category != null &&
-            $menu_sub_category == null &&
-            $menu_child_sub_category == null
-        ){
-            $product_data = $menu_product->merge($menu_category);
-        }elseif(
-            $menu_product != null &&
-            $menu_category != null &&
-            $menu_sub_category != null &&
-            $menu_child_sub_category == null
-        ){
-            $marge = $menu_product->merge($menu_category);
-            $product_data = $marge->merge($menu_sub_category);
-        }elseif(
-            $menu_product != null &&
-            $menu_category != null &&
-            $menu_sub_category != null &&
-            $menu_child_sub_category != null
-        ){
-            $marge = $menu_product->merge($menu_category);
-            $marge_sub = $marge->merge($menu_sub_category);
-            $product_data = $marge_sub->merge($menu_child_sub_category);
+        // Combine results based on available data
+        $product_data = $menu_product
+            ->merge($menu_category)
+            ->merge($menu_sub_category)
+            ->merge($menu_child_sub_category);
+
+        if ($product_data->isEmpty()) {
+            return response()->json([
+                'message' => "No matching products found",
+                'data' => []
+            ]);
         }
 
         return response()->json([
-            'message' => "Successfully data found",
+            'message' => $product_data != null ? "Successfully data found" : "Data not found",
             'data' => $product_data != null ? ProductListResource::collection($product_data) : []
         ]);
     }

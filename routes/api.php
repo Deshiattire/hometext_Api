@@ -65,7 +65,6 @@ Route::get('product/{type}/{menuId}', [ProductMenuController::class, 'EcommerceP
 Route::get('product/{mode}', [ProductMenuController::class, 'EcommerceProductMode']);
 Route::get('banner/slider', [ProductMenuController::class, 'EcommerceBannerSlider']);
 
-
 Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
 // for check out
 
