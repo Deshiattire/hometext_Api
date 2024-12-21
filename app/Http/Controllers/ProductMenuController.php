@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ProductListResource;
 use App\Manager\ImageUploadManager;
+use App\Models\BannerSlider;
 use App\Models\Category;
 use App\Models\ChildSubCategory;
 use App\Models\Product;
@@ -240,67 +241,18 @@ class ProductMenuController extends Controller
     }
 
     public function EcommerceBannerSlider(){
-        $banner[] = [
-            "button_text" => "Go To Shop",
-            "button_Link" => "",
-            "left" => [
-                "background_color" => "",
-                "text" => "",
-                "image" => ""
-            ],
-            "meddle" => [
-                "Header" => "",
-                "title" => "",
-                "description" => ""
-            ],
-            "right" => [
-                "background_color" => "",
-                "text" => "",
-                "image" => ""
-            ]
-        ];
-        $banner[] = [
-           "button_text" => "Go To Shop",
-            "button_Link" => "",
-            "left" => [
-                "background_color" => "",
-                "text" => "",
-                "image" => ""
-            ],
-            "meddle" => [
-                "Header" => "",
-                "title" => "",
-                "description" => ""
-            ],
-            "right" => [
-                "background_color" => "",
-                "text" => "",
-                "image" => ""
-            ]
-        ];
-        $banner[] = [
-            "button_text" => "Go To Shop",
-            "button_Link" => "",
-            "left" => [
-                "background_color" => "",
-                "text" => "",
-                "image" => ""
-            ],
-            "meddle" => [
-                "Header" => "",
-                "title" => "",
-                "description" => ""
-            ],
-            "right" => [
-                "background_color" => "",
-                "text" => "",
-                "image" => ""
-            ]
-        ];
+        $banner = BannerSlider::get()->select('slider');
+        $data = [];
+        foreach($banner as $item){
+            $item['slider']['left']['image'] = $item['slider']['left']['image'] ? ImageUploadManager::prepareImageUrl(BannerSlider::BANNER_UPLOAD_PATH, $item['slider']['left']['image']) : "";
+            $item['slider']['right']['image'] = $item['slider']['right']['image'] ? ImageUploadManager::prepareImageUrl(BannerSlider::BANNER_UPLOAD_PATH, $item['slider']['right']['image']): "";
+
+            array_push($data, $item['slider']);
+        }
 
         return response()->json([
             'messsage' => "Successfully data found",
-            'data' => $banner
+            'data' => $data
         ]);
     }
 }
