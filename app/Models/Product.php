@@ -361,6 +361,7 @@ class Product extends Model
 
         return $newProduct;
     }
+
     private function generateUniqueName(string $originalName): string
     {
         // You can add logic here to generate a unique name
@@ -385,6 +386,11 @@ class Product extends Model
         $shop = $this->shops->where('id', $shopId)->first();
 
         return $shop ? $shop->name : '';
+    }
+
+    public function frequentlyBought():BelongsTo
+    {
+        return $this->belongsTo(FrequentlyBought::class);
     }
 
 }

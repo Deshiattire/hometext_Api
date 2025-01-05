@@ -10,6 +10,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ChildSubCategory;
 use App\Models\Country;
+use App\Models\FrequentlyBought;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductSeoMetaData;
@@ -67,7 +68,28 @@ class ProductController extends Controller
             'product_specifications.specifications',
             'seo_meta.seoMetaData'
         ])->where('id', $id)->first();
-        return response()->json($products);
+
+        if($products){
+            $products['frequentlyBought'] = (new FrequentlyBought())->productData($products->frequently_bought_id);
+
+            if(!empty($products['realted_product'])){
+                $productLink = json_decode($products['realted_product'], true);
+                $item = explode(",", $productLink['productId']);
+                if(count($item) > 0){
+                    $prod = Product::whereIn('id', $item)->get();
+                    $products['realted_product'] = ProductListResource::collection($prod);
+                }else{
+                    $products['realted_product'] = [];
+                }
+            }else{
+                $products['realted_product'] = [];
+            }
+        }
+
+        return response()->json([
+            'message' => $products != null ? "Successfully data found" : "Data not found",
+            'data' => $products != null ? $products : []
+        ]);
     }
 
 
@@ -334,4 +356,26 @@ class ProductController extends Controller
     //     return response()->json($product);
 
     // }
+
+    public function ProductFilter(Request $request){
+        $input = [
+            'attributeId' => $request->input('attribute_id'),
+            'attributeValueId' => $request->input('attribute_value_id')
+        ];
+
+        $products = Product::query()->with([
+            'product_attributes.attributes',
+            'product_attributes.attribute_value'
+        ]);
+
+        if (!empty($input['search'])) {
+            $products->where('name', 'like', '%' . $input['search'] . '%')
+                ->orWhere('sku', 'like', '%' . $input['search'] . '%');
+        }
+
+        return response()->json([
+            'messsage' => "Successfully data found",
+            'data' => $products != null ? ProductListResource::collection($products) : []
+        ]);
+    }
 }
