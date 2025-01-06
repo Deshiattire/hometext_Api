@@ -378,4 +378,15 @@ class ProductController extends Controller
             'data' => $products != null ? ProductListResource::collection($products) : []
         ]);
     }
+
+    public function ProductFind(Request $request){
+        // DB::enableQueryLog();
+        $input = [
+            'search' => $request->input('search')
+        ];
+
+        $products = (new Product())->getFindProduct($input);
+        // dd(DB::getQueryLog());
+        return ProductListResource::collection($products);
+    }
 }

@@ -131,6 +131,37 @@ class Product extends Model
         }
     }
 
+    public function getFindProduct(array $input): Collection|Paginator
+    {
+        $query = self::query()->with([
+            'category:id,name',
+            'sub_category:id,name',
+            'child_sub_category:id,name',
+            'brand:id,name',
+            'country:id,name',
+            'supplier:id,name,phone',
+            'created_by:id,name',
+            'updated_by:id,name',
+            'primary_photo',
+            'product_attributes.attributes',
+            'product_attributes.attribute_value',
+            'product_specifications.specifications'
+        ]);
+
+        if (!empty($input['search'])) {
+            $search = $input['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('sku', 'like', '%' . $search . '%')
+                  ->orWhereHas('category', function($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        return $query->get();
+    }
+
     /**
      * @return BelongsTo
      */
