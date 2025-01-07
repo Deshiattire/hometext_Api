@@ -137,25 +137,26 @@ class Product extends Model
             'category:id,name',
             'sub_category:id,name',
             'child_sub_category:id,name',
-            'brand:id,name',
-            'country:id,name',
-            'supplier:id,name,phone',
-            'created_by:id,name',
-            'updated_by:id,name',
             'primary_photo',
-            'product_attributes.attributes',
-            'product_attributes.attribute_value',
-            'product_specifications.specifications'
         ]);
 
         if (!empty($input['search'])) {
             $search = $input['search'];
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('sku', 'like', '%' . $search . '%')
-                  ->orWhereHas('category', function($q) use ($search) {
-                      $q->where('name', 'like', '%' . $search . '%');
-                  });
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('sub_category', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('child_sub_category', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('shops', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
             });
         }
 
