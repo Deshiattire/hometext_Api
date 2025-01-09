@@ -57,8 +57,8 @@ class AttributeController extends Controller
      * @return JsonResponse
      */
     final public function get_attribute_list():JsonResponse
-        {
-            $attributes = (new Attribute())->getAttributeIdAndName();
-            return response()->json($attributes);
-        }
+    {
+        $attributes = (new Attribute())->getAttributeIdAndName();
+        return response()->json($attributes);
+    }
 }

@@ -56,7 +56,7 @@ Route::get('products-web/{is_all?}', [ProductController::class, 'index']);
 Route::get('products-web/{product_id}', [ProductController::class, 'index']);
 Route::get('products-details-web/{id}', [ProductController::class, 'productsdetails']);
 Route::post('products-web-find', [ProductController::class, 'ProductFind']);
-Route::get('products-web/filter-list', [AttributeController::class, 'get_attribute_list']);
+Route::get('products/filter-list', [AttributeController::class, 'get_attribute_list']);
 Route::post('products-web/filter', [ProductController::class, 'ProductFilter']);
 
 Route::get('divisions', [DivisionController::class, 'index']);

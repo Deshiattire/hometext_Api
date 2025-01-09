@@ -72,7 +72,9 @@ class ProductController extends Controller
         ])->where('id', $id)->first();
 
         if($products){
-            $products['frequentlyBought'] = (new FrequentlyBought())->productData($products->frequently_bought_id);
+            if($products->frequently_bought_id){
+                $products['frequentlyBought'] = (new FrequentlyBought())->productData($products->frequently_bought_id);
+            }
 
             if(!empty($products['realted_product'])){
                 $productLink = json_decode($products['realted_product'], true);
