@@ -145,9 +145,9 @@ class ChildSubCategoryController extends Controller
      * @param int $category_id
      * @return JsonResponse
      */
-    final public function get_child_sub_category_list(int $category_id):JsonResponse
+    final public function get_child_sub_category_list(int $sub_category_id):JsonResponse
     {
-        $childSubCategories = (new ChildSubCategory())->getChildSubCategoryIdAndName($category_id);
+        $childSubCategories = (new ChildSubCategory())->getChildSubCategoryIdAndName($sub_category_id);
         return response()->json($childSubCategories);
     }
 }

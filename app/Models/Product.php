@@ -299,6 +299,10 @@ class Product extends Model
             $query->where('sub_category_id', $input['sub_category_id']);
         }
 
+        if (!empty($input['child_sub_category_id'])) {
+            $query->where('child_sub_category_id', $input['child_sub_category_id']);
+        }
+
         $products = $query->get();
 
         // Calculate and append sell_price to each product

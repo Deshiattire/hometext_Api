@@ -156,7 +156,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-child-sub-category-list', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::get('get-shop-list', [ShopController::class, 'get_shop_list']);
     Route::get('get-sub-category-list/{category_id}', [SubCategoryController::class, 'get_sub_category_list']);
-    Route::get('get-child-sub-category-list/{category_id}', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
+    Route::get('get-child-sub-category-list/{sub_category_id}', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::post('product-photo-upload/{id}', [ProductPhotoController::class, 'store']);
     Route::group(['prefix' => 'transfers'], function () {
         Route::post('/', [ProductTransferController::class, 'store']); // Create a new transfer
