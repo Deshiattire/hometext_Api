@@ -145,6 +145,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        Log::info($product);
         $productDetails = $product->load([
             'category:id,name',
             'photos:id,photo,product_id,is_primary',
