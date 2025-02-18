@@ -32,7 +32,6 @@ class ProductAttribute extends Model
     final public function updateAttribute($input, Product $product)
     {
         $attribute_data = $this->prepareAttributeData($input, $product);
-        info($attribute_data);
 
         // Update existing attributes and add new attributes
         foreach ($attribute_data as $attribute) {

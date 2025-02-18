@@ -15,6 +15,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductSeoMetaData;
 use App\Models\ProductSpecification;
 use App\Models\Shop;
+use App\Models\ShopProduct;
 use App\Models\SubCategory;
 use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
@@ -78,7 +79,10 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         try {
+            Log::debug('=============== store =================');
+            Log::debug($request->all());
             DB::beginTransaction();
+
             $product = (new Product())->storeProduct($request->all(), auth()->id = 1);
 
             if ($request->has('attributes')) {
@@ -153,7 +157,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         try {
-            Log::debug('Request');
+            Log::debug('=============== update =================');
             Log::debug($request->all());
             DB::beginTransaction();
 
@@ -175,20 +179,10 @@ class ProductController extends Controller
                 (new ProductSeoMetaData())->updateSeoMata($request->input('meta'), $product);
             }
 
-            if ($request->has('shop_ids') && $request->has('shop_quantities')) {
-                $shopsData = $request->input('shop_quantities');
-
-                $shopQuantityData = [];
-
-                foreach ($shopsData as $shopQuantity) {
-                    $shopId = $shopQuantity['shop_id'];
-                    $quantity = $shopQuantity['quantity'];
-
-                    $shopQuantityData[$shopId] = ['quantity' => $quantity];
-                }
-
-                $product->shops()->sync($shopQuantityData);
+            if ($request->has('shop_ids') && $request->has('shops')) {
+                (new ShopProduct())->updateShopProduct($request->input('shops'), $product);
             }
+            
             DB::commit();
             return response()->json(['msg' => 'Product Updated Successfully', 'cls' => 'success', 'product_id' => $product->id]);
         } catch (\Throwable $e) {

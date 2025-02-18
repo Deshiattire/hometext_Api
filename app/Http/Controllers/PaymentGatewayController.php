@@ -10,7 +10,7 @@ class PaymentGatewayController extends Controller
     /*
      * Please change it as per your integrated site
      */
-	const BASE_URL = 'https://pay.hometexbd.ltd/';
+	const BASE_URL = 'https://payment.hometex.store/';
 	//const BASE_URL = 'http://127.0.0.1:8000/';
 
 	/*
@@ -72,11 +72,19 @@ class PaymentGatewayController extends Controller
             $response = curl_exec($ch);
             curl_close($ch);
             $content = json_decode((string) $response, true);
+
             if($content['status'] != "success"){
                 echo $content['message'];
                 return '';
             }
-            return $content['data']['token'];
+
+            return response()->json([
+                'status' => 'success', 
+                'data'=> [
+                    'token' => $content['data']['token']
+                ]
+            ]);
+            
         } catch (\Exception $e) {
             return array('error' => $e->getMessage());
         }
