@@ -131,6 +131,38 @@ class Product extends Model
         }
     }
 
+    public function getFindProduct(array $input): Collection|Paginator
+    {
+        $query = self::query()->with([
+            'category:id,name',
+            'sub_category:id,name',
+            'child_sub_category:id,name',
+            'primary_photo',
+        ]);
+
+        if (!empty($input['search'])) {
+            $search = $input['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('sub_category', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('child_sub_category', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('shops', function($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        return $query->get();
+    }
+
     /**
      * @return BelongsTo
      */
@@ -267,6 +299,10 @@ class Product extends Model
             $query->where('sub_category_id', $input['sub_category_id']);
         }
 
+        if (!empty($input['child_sub_category_id'])) {
+            $query->where('child_sub_category_id', $input['child_sub_category_id']);
+        }
+
         $products = $query->get();
 
         // Calculate and append sell_price to each product
@@ -361,6 +397,7 @@ class Product extends Model
 
         return $newProduct;
     }
+
     private function generateUniqueName(string $originalName): string
     {
         // You can add logic here to generate a unique name
@@ -385,6 +422,11 @@ class Product extends Model
         $shop = $this->shops->where('id', $shopId)->first();
 
         return $shop ? $shop->name : '';
+    }
+
+    public function frequentlyBought():BelongsTo
+    {
+        return $this->belongsTo(FrequentlyBought::class);
     }
 
 }

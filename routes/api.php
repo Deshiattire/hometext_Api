@@ -55,6 +55,9 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('products-web/{is_all?}', [ProductController::class, 'index']);
 Route::get('products-web/{product_id}', [ProductController::class, 'index']);
 Route::get('products-details-web/{id}', [ProductController::class, 'productsdetails']);
+Route::post('products-web-find', [ProductController::class, 'ProductFind']);
+Route::get('products/filter-list', [AttributeController::class, 'get_attribute_list']);
+Route::post('products-web/filter', [ProductController::class, 'ProductFilter']);
 
 Route::get('divisions', [DivisionController::class, 'index']);
 Route::get('district/{division_id}', [DistrictController::class, 'index']);
@@ -153,7 +156,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-child-sub-category-list', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::get('get-shop-list', [ShopController::class, 'get_shop_list']);
     Route::get('get-sub-category-list/{category_id}', [SubCategoryController::class, 'get_sub_category_list']);
-    Route::get('get-child-sub-category-list/{category_id}', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
+    Route::get('get-child-sub-category-list/{sub_category_id}', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::post('product-photo-upload/{id}', [ProductPhotoController::class, 'store']);
     Route::group(['prefix' => 'transfers'], function () {
         Route::post('/', [ProductTransferController::class, 'store']); // Create a new transfer

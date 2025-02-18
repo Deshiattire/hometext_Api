@@ -10,6 +10,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ChildSubCategory;
 use App\Models\Country;
+use App\Models\FrequentlyBought;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductSeoMetaData;
@@ -24,6 +25,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+
+use function PHPUnit\Framework\isNull;
 
 class ProductController extends Controller
 {
@@ -68,7 +71,30 @@ class ProductController extends Controller
             'product_specifications.specifications',
             'seo_meta.seoMetaData'
         ])->where('id', $id)->first();
-        return response()->json($products);
+
+        if($products){
+            if($products->frequently_bought_id){
+                $products['frequentlyBought'] = (new FrequentlyBought())->productData($products->frequently_bought_id);
+            }
+
+            if(!empty($products['realted_product'])){
+                $productLink = json_decode($products['realted_product'], true);
+                $item = explode(",", $productLink['productId']);
+                if(count($item) > 0){
+                    $prod = Product::whereIn('id', $item)->get();
+                    $products['realted_product'] = ProductListResource::collection($prod);
+                }else{
+                    $products['realted_product'] = [];
+                }
+            }else{
+                $products['realted_product'] = [];
+            }
+        }
+
+        return response()->json([
+            'message' => $products != null ? "Successfully data found" : "Data not found",
+            'data' => $products != null ? $products : []
+        ]);
     }
 
 
@@ -123,6 +149,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        Log::info($product);
         $productDetails = $product->load([
             'category:id,name',
             'photos:id,photo,product_id,is_primary',
@@ -314,18 +341,39 @@ class ProductController extends Controller
         ]);
     }
 
+    public function ProductFilter(Request $request){
+        $input = [
+            'attributeId' => $request->input('attribute_id'),
+            'attributeValueId' => $request->input('attribute_value_id')
+        ];
 
-    // public function ProductMenu(): JsonResponse
-    // {
-    //     $product = Category::select('id', 'name', 'image')->with([
-    //         'subCategories' => function($query) {
-    //             $query->select('id', 'name', 'category_id'); // Don't forget to include the foreign key
-    //         },
-    //         'subCategories.childSubCategories' => function($query) {
-    //             $query->select('id', 'name', 'sub_category_id'); // Don't forget the foreign key here too
-    //         }
-    //     ])->get();
-    //     return response()->json($product);
+        if(empty($input['attributeId']) || empty($input['attributeValueId'])){
+            return response()->json([
+                'message' => "Please provide valid data",
+            ]);
+        }
 
-    // }
+        $products = collect();
+
+        $products = Product::join('product_attributes', 'product_attributes.product_id', '=', 'products.id')
+            ->where('product_attributes.attribute_id', $input['attributeId'])
+            ->where('product_attributes.attribute_value_id', $input['attributeValueId'])
+            ->get();
+
+        return response()->json([
+            'message' => count($products) > 0 ? "Successfully data found" : "Data not found",
+            'data' => count($products) > 0  != null ? ProductListResource::collection($products) : []
+        ]);
+    }
+
+    public function ProductFind(Request $request){
+        // DB::enableQueryLog();
+        $input = [
+            'search' => $request->input('search')
+        ];
+
+        $products = (new Product())->getFindProduct($input);
+        // dd(DB::getQueryLog());
+        return ProductListResource::collection($products);
+    }
 }

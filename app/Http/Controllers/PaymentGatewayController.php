@@ -79,12 +79,18 @@ class PaymentGatewayController extends Controller
             }
 
             return response()->json([
+<<<<<<< HEAD
                 'status' => 'success', 
                 'data'=> [
                     'token' => $content['data']['token']
                 ]
             ]);
             
+=======
+                'message' => "Successfully token found",
+                'token' => $content['data']['token']
+            ]);
+>>>>>>> 20ab37b5b3638e8ac2992c4059e941c76d8b9801
         } catch (\Exception $e) {
             return array('error' => $e->getMessage());
         }
