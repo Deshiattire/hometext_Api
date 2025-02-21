@@ -99,15 +99,15 @@ Route::apiResource('product', ProductController::class);
 Route::group(['middleware' => ['auth:sanctum', 'customer']], function () {
     // order details
     Route::get('my-order', [OrderDetailsController::class, 'myorder']);
-    
+
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);
     Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
-    
+
     // Manage wishlist
     Route::post('wish-list', [WishListController::class, 'wishlist']);
     Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
     Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
-    
+
     ////Payment Gateway
     Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
     Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
@@ -117,7 +117,7 @@ Route::group(['middleware' => ['auth:sanctum', 'customer']], function () {
 
     Route::post('product-review', [ReviewController::class, 'store']);
     Route::get('product-user-wise-review', [ReviewController::class, 'ProductUserWiseStarRating']);
-    Route::get('product-wise-review', [ReviewController::class, 'ProductWiseStarRating']);
+    Route::get('product-wise-review/{product_id}', [ReviewController::class, 'ProductWiseStarRating']);
 
 });
 
