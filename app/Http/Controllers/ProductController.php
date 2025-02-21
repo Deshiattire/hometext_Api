@@ -68,8 +68,7 @@ class ProductController extends Controller
             'product_attributes',
             'product_attributes.attributes',
             'product_attributes.attribute_value',
-            'product_specifications.specifications',
-            'seo_meta.seoMetaData'
+            'product_specifications.specifications'
         ])->where('id', $id)->first();
 
         if($products){
@@ -105,8 +104,6 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         try {
-            Log::debug('=============== store =================');
-            Log::debug($request->all());
             DB::beginTransaction();
 
             $product = (new Product())->storeProduct($request->all(), auth()->id = 1);
@@ -117,10 +114,6 @@ class ProductController extends Controller
 
             if ($request->has('specifications')) {
                 (new ProductSpecification())->storeProductSpecification($request->input('specifications'), $product);
-            }
-
-            if ($request->has('meta')) {
-                (new ProductSeoMetaData())->storeSeoMata($request->input('meta'), $product);
             }
 
             // Attach shops to the product
@@ -163,8 +156,7 @@ class ProductController extends Controller
             'primary_photo',
             'product_attributes',
             'product_attributes.attributes',
-            'product_attributes.attribute_value',
-            'seo_meta.seoMetaData'
+            'product_attributes.attribute_value'
         ]);
 
         return new ProductDetailsResource($productDetails);
@@ -184,8 +176,6 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         try {
-            Log::debug('=============== update =================');
-            Log::debug($request->all());
             DB::beginTransaction();
 
             // Update the basic product details if they are present in the request
@@ -200,10 +190,6 @@ class ProductController extends Controller
             // Update specifications if provided
             if ($request->has('specifications')) {
                 (new ProductSpecification())->updateProductSpecification($request->input('specifications'), $product);
-            }
-
-            if ($request->has('meta')) {
-                (new ProductSeoMetaData())->updateSeoMata($request->input('meta'), $product);
             }
 
             if ($request->has('shop_ids') && $request->has('shops')) {
@@ -234,8 +220,6 @@ class ProductController extends Controller
 
             // 2. Delete product specifications
             $product->product_specifications()->delete();
-
-            $product->seo_meta()->delete();
 
             // 3. Delete product photos (assuming you have a 'photos' relationship)
             $product->photos()->delete();

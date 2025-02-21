@@ -31,6 +31,7 @@ use App\Http\Controllers\web_api\OrderDetailsController;
 use App\Http\Controllers\web_api\PaymentController;
 use App\Http\Controllers\web_api\WishListController;
 use App\Http\Controllers\ProductTransferController;
+use App\Http\Controllers\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,8 +44,13 @@ use App\Http\Controllers\ProductTransferController;
 |
 */
 
-Route::get('/testing', function () {
-    return 'Hello World';
+Route::get('/no-access', function () {
+    return response()->json([
+        'success' => false,
+        'error' => [
+            'message' => 'You don\'t have permission.'
+        ]
+    ]);
 });
 
 //post csv in folder
@@ -74,33 +80,45 @@ Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::clas
 Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
 // Route::get('my-order', [CheckOutController::class, 'myorder']);
-Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
-Route::post('payment-success', [PaymentController::class, 'paymentsuccess']);
-Route::get('payment-cancel', [PaymentController::class, 'paymentcancel']);
-Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
 
-// order details
-Route::get('my-order', [OrderDetailsController::class, 'myorder']);
-// user
+
+
+// Customer Login
 Route::post('user-registration', [EcomUserController::class, 'registration']);
 Route::post('user-login', [EcomUserController::class, 'UserLogin']);
 // Route::post('user-signup', [EcomUserController::class, 'signup']);
-Route::get('my-profile', [EcomUserController::class, 'myprofile']);
-Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 
-// Manage wishlist
-Route::post('wish-list', [WishListController::class, 'wishlist']);
-Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
-Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
+
 
 Route::apiResource('product', ProductController::class);
 
-////Payment Gateway
-Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
 
-Route::middleware(['auth:api'])->post('/admin', function () {
-    // Route logic here
+
+Route::group(['middleware' => ['auth:sanctum', 'customer']], function () {
+    // order details
+    Route::get('my-order', [OrderDetailsController::class, 'myorder']);
+    
+    Route::get('my-profile', [EcomUserController::class, 'myprofile']);
+    Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+    
+    // Manage wishlist
+    Route::post('wish-list', [WishListController::class, 'wishlist']);
+    Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
+    Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
+    
+    ////Payment Gateway
+    Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
+    Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
+    Route::post('payment-success', [PaymentController::class, 'paymentsuccess']);
+    Route::get('payment-cancel', [PaymentController::class, 'paymentcancel']);
+    Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
+
+    Route::post('product-review', [ReviewController::class, 'store']);
+    Route::get('product-user-wise-review', [ReviewController::class, 'ProductUserWiseStarRating']);
+    Route::get('product-wise-review', [ReviewController::class, 'ProductWiseStarRating']);
+
 });
 
 Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
@@ -135,6 +153,10 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::apiResource('order', OrderController::class);
     Route::get('get-payment-methods', [PaymentMethodController::class, 'index']);
     Route::get('products/{id}', [ProductController::class, 'show']);
+    Route::post('product-menu-generate', [ProductMenuController::class, 'MenuGenerate']);
+    Route::get('product-menu-list', [ProductMenuController::class, 'MenuList']);
+    Route::get('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListEdit']);
+    Route::put('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListUpdate']);
 
 });
 

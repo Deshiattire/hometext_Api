@@ -17,11 +17,6 @@ use Illuminate\Support\Facades\Validator;
 
 class EcomUserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['signup', 'UserLogin', 'myorder', 'registration', 'myprofile', 'updateprofile']]);
-    }
-
     // E-com user signup
     public function signup(Request $request)
     {
@@ -63,8 +58,9 @@ class EcomUserController extends Controller
         }
 
         $input = $request->all();
-        $input['name'] =  $input['first_name'];
+        $input['name'] =  $input['first_name'] +" "+ $input['last_name'];
         $input['shop_id'] = 4;
+        $input['role_id'] = 3;
         $input['salt'] = rand(1111, 9999);
         // $input['username'] = $request->mobile_no;
         $input['password'] = Hash::make($input['password']);

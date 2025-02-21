@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->integer('rating')->default(0);
-            $table->string('comment')->nullable()->comment('product related comment');;
+            $table->string('comment')->nullable()->comment('product related comment');
+            $table->tinyInteger('accept')->default(0)->comment('0=pendind, 1=accept, 2=deny');
             $table->timestamps();
         });
     }

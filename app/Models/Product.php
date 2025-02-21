@@ -29,17 +29,23 @@ class Product extends Model
         'updated_by_id',
         'cost',
         'description',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
         'discount_end',
         'discount_fixed',
         'discount_percent',
         'discount_start',
         'name',
         'price',
+        'old_price',
         'price_formula',
         'field_limit',
         'sku',
         'slug',
         'status',
+        'frequently_bought_id',
+        'realted_product',
         'stock',
         'isFeatured',
         'isNew',
@@ -82,6 +88,9 @@ class Product extends Model
             'isFeatured' => $input['isFeatured'] ?? 0,
             'isNew' => $input['isNew'] ?? 0,
             'isTrending' => $input['isTrending'] ?? 0,
+            'meta_title' => $input['meta_title'] ?? '',
+            'meta_keywords' => $input['meta_keywords'] ?? '',
+            'meta_description' => $input['meta_description'] ?? '',
         ];
     }
 
@@ -246,11 +255,6 @@ class Product extends Model
     public function product_specifications():HasMany
     {
         return $this->hasMany(ProductSpecification::class);
-    }
-
-    public function seo_meta():HasMany
-    {
-        return $this->hasMany(ProductSeoMetaData::class, 'product_id');
     }
 
     /**

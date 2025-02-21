@@ -17,6 +17,7 @@ class AuthController extends Controller
 {
     public const ADMIN_USER = 1;
     public const SALES_MANAGER = 2;
+    public const CUSTOMER = 3;
     /**
      *@param AuthRequest $request
      *@return \Illuminate\Http\JsonResponse
@@ -27,10 +28,11 @@ class AuthController extends Controller
         if($request->input('user_type') == self::ADMIN_USER){
             $user = (new User())->getUserEmailOrPhone($request->all());
             $role = self::ADMIN_USER;
-        }else{
+        }elseif($request->input('user_type') == self::SALES_MANAGER){
             $user= (new SalesManager())->getUserEmailOrPhone($request->all());
             $role = self::SALES_MANAGER;
         }
+
         if($user && Hash::check($request->input('password'), $user->password)){
             $branch =  null;
             if($role == self::SALES_MANAGER){

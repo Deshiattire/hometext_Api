@@ -6,7 +6,6 @@ use App\Manager\ImageUploadManager;
 use App\Manager\PriceManager;
 use App\Models\Product;
 use App\Models\ProductPhoto;
-use App\Models\ProductSeoMetaData;
 use App\Utility\Date;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,6 +28,7 @@ class ProductDetailsResource extends JsonResource
             'slug'=>$this->slug,
             'cost'=>$this->cost . PriceManager::CURRENCY_SYMBOL,
             'price'=>number_format($this->price) . PriceManager::CURRENCY_SYMBOL,
+            'old_price'=>number_format($this->old_price) . PriceManager::CURRENCY_SYMBOL,
             'original_price'=>$this->price,
             'price_formula'=>$this->price_formula,
             'field_limit'=>$this->field_limit,
@@ -68,12 +68,9 @@ class ProductDetailsResource extends JsonResource
             'attributes'=>ProductAttributeListResource::collection($this->product_attributes),
             'specifications'=>PrductSpecificationListResource::collection($this->product_specifications),
             'photos'=>ProductPhotoListResource::collection($this->photos),
-            'meta_data'=>$this->seo_meta->map(function($seo){
-                return [
-                    'name' => $seo->name,
-                    'content' => $seo->content,
-                ];
-            }),
+            'meta_title'=>$this->meta_title,
+            'meta_description'=>$this->meta_description,
+            'meta_keywords'=>$this->meta_keywords,
         ];
     }
 }

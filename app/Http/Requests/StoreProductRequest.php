@@ -42,7 +42,7 @@ class StoreProductRequest extends FormRequest
             'isFeatured' =>'numeric',
             'isNew' =>'numeric',
             'isTrending' =>'numeric',
-            'description' =>'required|max:1000|min:10',
+            'description' =>'required|max:2500|min:10',
             'attributes' =>'array',
             'specifications' =>'array',
             'shop_ids' => 'required|array',
