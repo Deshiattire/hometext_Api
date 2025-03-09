@@ -21,27 +21,7 @@ use Illuminate\Support\Str;
 
 class EcomUserController extends Controller
 {
-    // E-com user signup
-    public function signup(Request $request)
-    {
-        $fields['password'] = 'required';
-        $fields['username'] = 'required';
-        $validator = Validator::make($request->all(), $fields);
-        if ($validator->fails()) {
-            return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
-        }
-        // check valid user
-        $is_valid = Auth::attempt(['email' => $request->username, 'password' => $request->password]);
-        if ($is_valid) {
-            return response()->json(['status' => 200, 'message' => 'success', 'token' => $is_valid], 200);
-        } else {
-            $validator->errors()->add('password', 'Login credential is not valid.');
-            return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
-        }
-    }
-
     // registration
-
     public function registration(Request $request)
     {
 

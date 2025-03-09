@@ -82,12 +82,9 @@ Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
 // Route::get('my-order', [CheckOutController::class, 'myorder']);
 
-
-
 // Customer Login
 Route::post('user-registration', [EcomUserController::class, 'registration']);
 Route::post('user-login', [EcomUserController::class, 'UserLogin']);
-// Route::post('user-signup', [EcomUserController::class, 'signup']);
 
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 
