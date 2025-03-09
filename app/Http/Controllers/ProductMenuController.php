@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AppHelper;
 use App\Http\Resources\ProductListResource;
 use App\Manager\ImageUploadManager;
 use App\Models\BannerSlider;
@@ -13,6 +14,8 @@ use App\Models\ProductPhoto;
 use App\Models\SubCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 
 use function PHPUnit\Framework\isNull;
@@ -94,9 +97,10 @@ class ProductMenuController extends Controller
         }
     }
 
-    public function EcommerceProductMenu($type, $menuId)
+    public function EcommerceProductMenu(Request $request, $type, $menuId)
     {
         $ProductMenu = null;
+        $perPage = $request->input('per_page'); // Number of items per page
         if($menuId != null){
             $ProductMenu = ProductMenu::where('menu_type', $type)
                             ->where('id', $menuId)
@@ -161,7 +165,7 @@ class ProductMenuController extends Controller
 
         return response()->json([
             'message' => $product_data != null ? "Successfully data found" : "Data not found",
-            'data' => $product_data != null ? ProductListResource::collection($product_data) : []
+            'data' => $product_data != null ? AppHelper::DataPaginate($product_data, $perPage) : []
         ]);
     }
 
@@ -255,4 +259,7 @@ class ProductMenuController extends Controller
             'data' => $data
         ]);
     }
+
+
+
 }

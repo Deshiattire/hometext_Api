@@ -5,13 +5,16 @@ namespace App\Http\Controllers\web_api;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
-use Exception;
-use Illuminate\Http\JsonResponse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 
 
@@ -203,5 +206,133 @@ class EcomUserController extends Controller
             ],
             400);
         }
+    }
+
+    public function UserPasswordChange(Request $request)
+    {
+        $validator = Validator::make(
+            $request->only('old_password', 'new_password'),
+            [
+                'old_password' => 'required',
+                'new_password' => 'required|min:6',
+            ]
+        );
+
+        $user = User::where('id', Auth::id())->first();
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation_err',
+                'error' => $validator->errors()
+            ],
+            400);
+        }
+       
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['message' => 'Old password is incorrect'], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        return response()->json(['message' => 'Password changed successfully']);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make(
+            $request->only('email'),
+            [
+                'email' => 'required|email|exists:users,email',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation_err',
+                'error' => $validator->errors()
+            ],
+            400);
+        }
+
+        // Generate a unique token
+        $token = Str::random(60);
+
+        // Store the token in the password_resets table
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'email' => $request->email,
+                'token' => Hash::make($token),
+                'created_at' => Carbon::now()
+            ]
+        );
+
+        // Send reset link via email
+        $resetLink = env('FRONTEND_URL') . "/reset-password?token=$token&email=" . $request->email;
+        
+
+        Mail::raw("Click the link to reset your password: $resetLink", function ($message) use ($request) {
+            $message->to($request->email)
+                ->subject('Reset Password');
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset link sent successfully.',
+            'data' => [],
+            'error' => [
+                'code' => 0
+            ]
+        ]);
+        
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make(
+            $request->only('token', 'email', 'password'),
+            [
+                'token' => 'required',
+                'email' => 'required|email|exists:users,email',
+                'password' => 'required|min:6|confirmed',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation_err',
+                'error' => $validator->errors()
+            ],
+            400);
+        }
+
+        // Get token record
+        $resetRecord = DB::table('password_resets')->where('email', $request->email)->first();
+
+
+        if (!$resetRecord || !Hash::check($request->token, $resetRecord->token)) {
+            return response()->json(['error' => 'Invalid token'], 400);
+        }
+
+        // Reset user password
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Delete token record
+        DB::table('password_resets')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully.',
+            'data' => [],
+            'error' => [
+                'code' => 0
+            ]
+        ]);
     }
 }

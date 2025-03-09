@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Log;
 
 class Product extends Model
 {
@@ -105,9 +106,10 @@ class Product extends Model
         return self::query()->with('primary_photo')->findOrFail($id);
     }
 
-    public function getProductList(array $input, bool $isAll = false): Collection|Paginator
+    public function getProductList(array $input): Collection|Paginator
     {
         $perPage = $input['per_page'] ?? 10;
+        $paginate = $input['paginate'];
 
         $query = self::query()->with([
             'category:id,name',
@@ -133,10 +135,10 @@ class Product extends Model
             $query->orderBy($input['order_by'], $input['direction'] ?? 'asc');
         }
 
-        if ($isAll == 'yes') {
-            return $query->get();
-        } else {
+        if ($paginate == 'yes') {
             return $query->paginate($perPage);
+        } else {
+            return $query->get();
         }
     }
 

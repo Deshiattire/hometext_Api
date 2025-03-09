@@ -20,6 +20,7 @@ use App\Http\Controllers\PaymentGatewayController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductMenuController;
+use App\Http\Controllers\ProductOfferRequestController;
 use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\SalesManagerController;
 use App\Http\Controllers\ShopController;
@@ -45,7 +46,7 @@ use App\Http\Controllers\ReviewController;
 */
 
 Route::get('/no-access', function () {
-    return response()->json([
+    return Response()->json([
         'success' => false,
         'error' => [
             'message' => 'You don\'t have permission.'
@@ -79,7 +80,7 @@ Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::clas
 
 Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
-// Route::get('my-order', [CheckOutController::class, 'myorder']);
+Route::get('my-order', [CheckOutController::class, 'myorder']);
 
 
 
@@ -92,21 +93,27 @@ Route::post('user-login', [EcomUserController::class, 'UserLogin']);
 
 
 
-Route::apiResource('product', ProductController::class);
+// Route::apiResource('product', ProductController::class);
 
 
-
-Route::group(['middleware' => ['auth:sanctum', 'customer']], function () {
+Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     // order details
-    Route::get('my-order', [OrderDetailsController::class, 'myorder']);
+    Route::get('my-order-list', [OrderDetailsController::class, 'myorder']);
     
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);
     Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+
+    Route::post('user-password-change', [EcomUserController::class, 'UserPasswordChange']);
+    Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
+    Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
     
     // Manage wishlist
     Route::post('wish-list', [WishListController::class, 'wishlist']);
     Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
     Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
+
+    Route::post('product/restock/request', [ProductOfferRequestController::class, 'RestockRequest']);
+    Route::post('product/make-an-offer', [ProductOfferRequestController::class, 'MakeAnOffer']);
     
     ////Payment Gateway
     Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
@@ -118,6 +125,7 @@ Route::group(['middleware' => ['auth:sanctum', 'customer']], function () {
     Route::post('product-review', [ReviewController::class, 'store']);
     Route::get('product-user-wise-review', [ReviewController::class, 'ProductUserWiseStarRating']);
     Route::get('product-wise-review', [ReviewController::class, 'ProductWiseStarRating']);
+   
 
 });
 
@@ -129,7 +137,6 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::get('get-brand-list', [BrandController::class, 'get_brand_list']);
     Route::get('get-category-list', [CategoryController::class, 'get_category_list']);
     Route::get('get-shop-list', [ShopController::class, 'get_shop_list']);
-    Route::apiResource('product', ProductController::class);
     Route::get('get-product-list-for-bar-code', [ProductController::class, 'get_product_list_for_bar_code']);
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::get('get-sub-category-list/{category_id}', [SubCategoryController::class, 'get_sub_category_list']);
@@ -141,6 +148,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
         Route::put('/{transfer}/approve', [ProductTransferController::class, 'approve']); // Approve a transfer
         Route::put('/{transfer}/reject', [ProductTransferController::class, 'reject']); // Reject a transfer
     });
+    Route::apiResource('product', ProductController::class);
     Route::apiResource('category', CategoryController::class);
     Route::apiResource('sub-category', SubCategoryController::class);
     Route::apiResource('brand', BrandController::class);
@@ -157,7 +165,6 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::get('product-menu-list', [ProductMenuController::class, 'MenuList']);
     Route::get('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListEdit']);
     Route::put('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListUpdate']);
-
 });
 
 
@@ -207,6 +214,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('product-menu-list', [ProductMenuController::class, 'MenuList']);
     Route::get('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListEdit']);
     Route::put('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListUpdate']);
+    Route::get('products/restock-offer/{type}', [ProductOfferRequestController::class, 'index']);
 
 });
 

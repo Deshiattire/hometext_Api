@@ -34,18 +34,18 @@ class ProductController extends Controller
      * @param Request $request
      * @return AnonymousResourceCollection
      */
-    public function index(Request $request, $is_all = 'yes'): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
         // DB::enableQueryLog();
         $input = [
+            'paginate' => $request->input('paginate'),
             'per_page' => $request->input('per_page'),
             'search' => $request->input('search'),
             'order_by' => $request->input('order_by'),
             'direction' => $request->input('direction'),
         ];
 
-        $products = (new Product())->getProductList($input, $is_all);
-        // dd(DB::getQueryLog());
+        $products = (new Product())->getProductList($input);
         return ProductListResource::collection($products);
     }
 
