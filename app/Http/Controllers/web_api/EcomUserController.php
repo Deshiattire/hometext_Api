@@ -211,10 +211,10 @@ class EcomUserController extends Controller
     public function UserPasswordChange(Request $request)
     {
         $validator = Validator::make(
-            $request->only('old_password', 'new_password'),
+            $request->only('old_password', 'new_password', 'new_password_confirmation'),
             [
                 'old_password' => 'required',
-                'new_password' => 'required|min:6',
+                'new_password' => 'required|min:6|confirmed',
             ]
         );
 
