@@ -119,7 +119,7 @@ class CheckOutController extends Controller
             $user = new User();
             $user->password = Hash::make($request->password);
             $user->email =  $request->username;
-            $user->name =  $request->pd_first_name;
+            $user->first_name =  $request->pd_first_name;
             $user->phone =  $request->pd_phone;
             $user->shop_id = 4;
             $user->salt = rand(1111, 9999);
@@ -176,7 +176,7 @@ class CheckOutController extends Controller
 
                 $transaction->save();
             }
-            $success['name'] = $user->name;
+            $success['name'] = $user->first_name;
 
             $success['authorisation'] = [
                 'token' => $token,

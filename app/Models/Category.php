@@ -52,7 +52,7 @@ class Category extends Model
         if (!empty($input['order_by'])) {
             $query->orderBy($input['order_by'], $input['direction'] ?? 'asc');
         }
-        return $query->with('user:id,name')->paginate($per_page);
+        return $query->with('user:id,first_name,last_name')->paginate($per_page);
     }
     /**
      * @return \Illuminate\Support\Collection

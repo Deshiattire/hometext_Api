@@ -39,7 +39,7 @@ class BrandListResource extends JsonResource
             'status' => $this->status == 1 ? 'Active' : 'Inactive',
             'photo' => ImageUploadManager::prepareImageUrl(Brand::THUMB_IMAGE_UPLOAD_PATH, $this->logo),
             'photo_full' => ImageUploadManager::prepareImageUrl(Brand::IMAGE_UPLOAD_PATH, $this->logo),
-            'created_by' => $this->user?->name,
+            'created_by' => $this->user?->first_name.' '.$this->user?->last_name,
             'created_at' => $this->created_at->toDayDateTimeString(),
             'updated_at' => $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString() : 'Not updated yet',
         ];

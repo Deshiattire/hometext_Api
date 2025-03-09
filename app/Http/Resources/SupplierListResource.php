@@ -22,7 +22,7 @@ class SupplierListResource extends JsonResource
         'email'=>$this->email,
         'phone'=>$this->phone,
         'details'=>$this->details,
-        'created_by'=>$this->user?->name,
+        'created_by'=>$this->user?->first_name.' '.$this->user?->last_name,
         'status'=>$this->status == Supplier::STATUS_ACTIVE ? Supplier::STATUS_ACTIVE_TEXT: Supplier::STATUS_INACTIVE_TEXT,
         'logo'=>ImageUploadManager::prepareImageUrl(Supplier::THUMB_IMAGE_UPLOAD_PATH, $this->logo),
         'logo_full'=>ImageUploadManager::prepareImageUrl(Supplier::IMAGE_UPLOAD_PATH, $this->logo),

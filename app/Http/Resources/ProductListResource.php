@@ -56,8 +56,8 @@ class ProductListResource extends JsonResource
             'child_sub_category'=>$this->child_sub_category,
             'supplier'=>$this->supplier,
             'country'=>$this->country,
-            'created_by'=>$this->created_by?->name,
-            'updated_by'=>$this->updated_by?->name,
+            'created_by'=>$this->created_by?->first_name.' '.$this->created_by?->last_name,
+            'updated_by'=>$this->created_by?->first_name.' '.$this->created_by?->last_name,
             'primary_photo'=>ImageUploadManager::prepareImageUrl(ProductPhoto::THUMB_PHOTO_UPLOAD_PATH, $this->primary_photo?->photo),
 
             'attributes'=>ProductAttributeListResource::collection($this->product_attributes),

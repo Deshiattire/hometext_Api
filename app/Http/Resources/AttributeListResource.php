@@ -19,7 +19,7 @@ class AttributeListResource extends JsonResource
             'name'=>$this->name,
             'status'=>$this->status == 1 ? 'Active' : 'Inactive',
             'original_status'=>$this->status,
-            'created_by'=>$this->user?->name ,
+            'created_by'=>$this->user?->first_name.' '.$this->user?->last_name,
             'created_at' => $this->created_at->toDayDateTimeString(),
             'updated_at' => $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString() : 'Not updated yet',
             'value'=>ValueListResource::collection($this->value),

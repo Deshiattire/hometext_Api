@@ -38,7 +38,7 @@ class ChildSubCategoryListResource extends JsonResource
             'status' => $this->status == 1 ? 'Active' : 'Inactive',
             'photo' => ImageUploadManager::prepareImageUrl(ChildSubCategory::THUMB_IMAGE_UPLOAD_PATH, $this->photo),
             'photo_full' => ImageUploadManager::prepareImageUrl(ChildSubCategory::IMAGE_UPLOAD_PATH, $this->photo),
-            'created_by' => $this->user?->name,
+            'created_by' => $this->user?->first_name.' '.$this->user?->last_name,
             'created_at' => $this->created_at->toDayDateTimeString(),
             'updated_at' => $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString() : 'Not updated yet',
         ];

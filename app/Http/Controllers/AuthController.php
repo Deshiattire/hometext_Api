@@ -39,7 +39,8 @@ class AuthController extends Controller
                 $branch = (new Shop())->getShopDetailsById($user->shop_id);
             }
             $user_data['token'] = $user->createToken($user->email)->plainTextToken;
-            $user_data['name'] = $user->name;
+            $user_data['first_name'] = $user->first_name;
+            $user_data['last_name'] = $user->last_name;
             $user_data['phone'] = $user->phone;
             $user_data['photo'] = $user->photo;
             $user_data['email'] = $user->email;

@@ -41,7 +41,7 @@ class ChildSubCategory extends Model
             $query->orderBy($input['order_by'], $input['direction'] ?? 'asc');
         }
 
-        return $query->with(['user:id,name', 'sub_category:id,name'])->paginate($per_page);
+        return $query->with(['user:id,first_name,last_name', 'sub_category:id,name'])->paginate($per_page);
     }
 
     /**

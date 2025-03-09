@@ -24,7 +24,7 @@ class SalesManagerListResource extends JsonResource
             'nid'=>$this->nid,
             'bio'=>$this->bio,
             'employee_type'=>$this->employee_type,
-            'created_by'=>$this->user?->name,
+            'created_by'=>$this->user?->first_name.' '.$this->user?->last_name,
             'status'=>$this->status == SalesManager::STATUS_ACTIVE ? SalesManager::STATUS_ACTIVE_TEXT: SalesManager::STATUS_INACTIVE_TEXT,
             'photo'=>ImageUploadManager::prepareImageUrl(SalesManager::THUMB_PHOTO_UPLOAD_PATH, $this->photo),
             'photo_full'=>ImageUploadManager::prepareImageUrl(SalesManager::PHOTO_UPLOAD_PATH, $this->photo),

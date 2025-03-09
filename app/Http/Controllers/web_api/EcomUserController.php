@@ -142,7 +142,7 @@ class EcomUserController extends Controller
     //     if ($user) {
     //         if($user->role_id == 3 && Hash::check($request->input('password'), $user->password)){
     //             $user_data['token'] = $user->createToken($user->email)->plainTextToken;
-    //             $user_data['name'] = $user->name;
+    //             $user_data['name'] = $user->first_name;
     //             $user_data['phone'] = $user->phone;
     //             $user_data['photo'] = $user->photo;
     //             $user_data['email'] = $user->email;

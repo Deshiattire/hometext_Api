@@ -22,7 +22,7 @@ class ShopListResource extends JsonResource
             'email'=>$this->email,
             'phone'=>$this->phone,
             'details'=>$this->details,
-            'created_by'=>$this->user?->name,
+            'created_by'=>$this->user?->first_name.' '.$this->user?->last_name,
             'status'=>$this->status == Shop::STATUS_ACTIVE ? Shop::STATUS_ACTIVE_TEXT: Shop::STATUS_INACTIVE_TEXT,
             'logo'=>ImageUploadManager::prepareImageUrl('',''),
             'logo_full'=>ImageUploadManager::prepareImageUrl('',''),

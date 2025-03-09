@@ -21,7 +21,7 @@ class ValueListResource extends JsonResource
             'status_original'=>$this->status,
             'created_at' => $this->created_at->toDayDateTimeString(),
             'updated_at' => $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString() : 'Not updated yet',
-            'created_by'=>$this->user?->name,
+            'created_by'=>$this->user?->first_name.' '.$this->user?->last_name,
         ];
     }
 }

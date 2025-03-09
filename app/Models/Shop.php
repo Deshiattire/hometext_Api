@@ -58,7 +58,7 @@ class Shop extends Model
             'address.division:id,name',
             'address.district:id,name',
             'address.area:id,name',
-            'user:id,name',
+            'user:id,first_name,last_name',
         );
 
         if (!empty($input['search'])) {

@@ -36,7 +36,7 @@ class ProductController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        // DB::enableQueryLog();
+        DB::enableQueryLog();
         $input = [
             'paginate' => $request->input('paginate'),
             'per_page' => $request->input('per_page'),
