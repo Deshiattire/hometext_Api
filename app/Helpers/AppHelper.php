@@ -25,15 +25,13 @@ class AppHelper{
         return $paginatedData;
     }
 
-    public static function ResponseFormat(bool $status, string $message, $data=null)
+    public static function ResponseFormat(bool $status, string $message, $data=null, $errorMessage=null)
     {
         return response()->json([
             'success' => $status,
             'message' => $message,
             'data' => $data,
-            'error' => [
-                'code' => 0
-            ]
-        ]);
+            'error' => $errorMessage
+        ], $status? 200: 400);
     }
 }
