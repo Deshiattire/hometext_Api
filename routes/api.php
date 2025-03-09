@@ -80,7 +80,7 @@ Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::clas
 
 Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
-Route::get('my-order', [CheckOutController::class, 'myorder']);
+// Route::get('my-order', [CheckOutController::class, 'myorder']);
 
 
 
@@ -107,6 +107,11 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
     Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
     
+    Route::get('my-order', [OrderDetailsController::class, 'myorder']);
+
+    Route::get('my-profile', [EcomUserController::class, 'myprofile']);
+    Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+
     // Manage wishlist
     Route::post('wish-list', [WishListController::class, 'wishlist']);
     Route::post('get-wish-list', [WishListController::class, 'getWishlist']);
@@ -114,7 +119,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
 
     Route::post('product/restock/request', [ProductOfferRequestController::class, 'RestockRequest']);
     Route::post('product/make-an-offer', [ProductOfferRequestController::class, 'MakeAnOffer']);
-    
+
     ////Payment Gateway
     Route::get('get-token', [PaymentGatewayController::class, 'getToken']);
     Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
@@ -124,8 +129,7 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
 
     Route::post('product-review', [ReviewController::class, 'store']);
     Route::get('product-user-wise-review', [ReviewController::class, 'ProductUserWiseStarRating']);
-    Route::get('product-wise-review', [ReviewController::class, 'ProductWiseStarRating']);
-   
+    Route::get('product-wise-review/{product_id}', [ReviewController::class, 'ProductWiseStarRating']);
 
 });
 

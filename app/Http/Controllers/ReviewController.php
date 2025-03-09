@@ -27,8 +27,8 @@ class ReviewController extends Controller
         }
     }
 
-    public function ProductWiseStarRating($productId){
-        $StarRating = ProductStarRating::where('product_id', $productId)->get();
+    public function ProductWiseStarRating($product_id){
+        $StarRating = ProductStarRating::where('product_id', $product_id)->get();
 
         if($StarRating != null){
             return response()->json([
