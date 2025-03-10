@@ -72,7 +72,7 @@ Route::get('area/{district_id}', [AreaController::class, 'index']);
 
 Route::get('product-menu/{menuType}', [ProductMenuController::class, 'DynamicProductMenu']);
 Route::get('product/{type}/{menuId}', [ProductMenuController::class, 'EcommerceProductMenu']);
-Route::get('product-mode/{mode}', [ProductMenuController::class, 'EcommerceProductMode']);
+Route::get('product-hot/{mode}', [ProductMenuController::class, 'EcommerceProductMode']);
 Route::get('banner/slider', [ProductMenuController::class, 'EcommerceBannerSlider']);
 
 Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
