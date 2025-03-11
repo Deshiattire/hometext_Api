@@ -195,7 +195,7 @@ class ProductController extends Controller
             if ($request->has('shop_ids') && $request->has('shops')) {
                 (new ShopProduct())->updateShopProduct($request->input('shops'), $product);
             }
-            
+
             DB::commit();
             return response()->json(['msg' => 'Product Updated Successfully', 'cls' => 'success', 'product_id' => $product->id]);
         } catch (\Throwable $e) {

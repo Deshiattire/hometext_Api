@@ -32,6 +32,7 @@ use App\Http\Controllers\web_api\OrderDetailsController;
 use App\Http\Controllers\web_api\PaymentController;
 use App\Http\Controllers\web_api\WishListController;
 use App\Http\Controllers\ProductTransferController;
+use App\Http\Controllers\ProductWiseFaqController;
 use App\Http\Controllers\ReviewController;
 
 /*
@@ -59,7 +60,7 @@ Route::post('/save-csv', [CsvController::class, 'saveCsv']);
 
 // Route::get('test', [scriptManager::class, 'getCountry']);
 Route::post('login', [AuthController::class, 'login']);
-Route::get('products-web/{is_all?}', [ProductController::class, 'index']);
+Route::get('products-web', [ProductController::class, 'index']);
 Route::get('products-web/{product_id}', [ProductController::class, 'index']);
 Route::get('products-details-web/{id}', [ProductController::class, 'productsdetails']);
 Route::post('products-web-find', [ProductController::class, 'ProductFind']);
@@ -74,6 +75,8 @@ Route::get('product-menu/{menuType}', [ProductMenuController::class, 'DynamicPro
 Route::get('product/{type}/{menuId}', [ProductMenuController::class, 'EcommerceProductMenu']);
 Route::get('product-hot/{mode}', [ProductMenuController::class, 'EcommerceProductMode']);
 Route::get('banner/slider', [ProductMenuController::class, 'EcommerceBannerSlider']);
+
+Route::get('product-wise/faq/', [ProductWiseFaqController::class, 'index']);
 
 Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
 // for check out
@@ -96,14 +99,14 @@ Route::post('user-login', [EcomUserController::class, 'UserLogin']);
 Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     // order details
     Route::get('my-order-list', [OrderDetailsController::class, 'myorder']);
-    
+
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);
     Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
 
     Route::post('user-password-change', [EcomUserController::class, 'UserPasswordChange']);
     Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
     Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
-    
+
     Route::get('my-order', [OrderDetailsController::class, 'myorder']);
 
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);

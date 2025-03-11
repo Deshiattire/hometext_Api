@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\AppHelper;
 use App\Manager\PriceManager;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -106,10 +107,16 @@ class Product extends Model
         return self::query()->with('primary_photo')->findOrFail($id);
     }
 
-    public function getProductList(array $input): Collection|Paginator
+    public function
+
+    getProductList(array $input): Collection|Paginator
     {
         $perPage = $input['per_page'] ?? 10;
         $paginate = $input['paginate'];
+
+        $collectionMerge1 = collect();
+        $with_stock = collect();
+        $without_stock = collect();
 
         $query = self::query()->with([
             'category:id,name',
@@ -136,7 +143,9 @@ class Product extends Model
         }
 
         if ($paginate == 'yes') {
-            return $query->paginate($perPage);
+            $with_stock = (clone $query)->where('stock', '>', 0)->get();
+            $without_stock = (clone $query)->where('stock', 0)->get();
+            return AppHelper::DataPaginate($with_stock->merge($without_stock), $perPage);
         } else {
             return $query->get();
         }
