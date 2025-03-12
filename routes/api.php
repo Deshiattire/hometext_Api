@@ -88,6 +88,8 @@ Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbylogi
 // Customer Login
 Route::post('user-registration', [EcomUserController::class, 'registration']);
 Route::post('user-login', [EcomUserController::class, 'UserLogin']);
+Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
+Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
 
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 
@@ -104,8 +106,6 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
 
     Route::post('user-password-change', [EcomUserController::class, 'UserPasswordChange']);
-    Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
-    Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
 
     Route::get('my-order', [OrderDetailsController::class, 'myorder']);
 
