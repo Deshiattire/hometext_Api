@@ -1,4 +1,4 @@
-php artisan cache:clear && php artisan route:clear && php artisan view:clear && composer clear-cache && composer dump-autoload && php artisan config:clear && php artisan optimize && php artisan config:cache
+php artisan cache:clear && php artisan route:clear && php artisan view:clear && composer clear-cache && php artisan config:clear && composer dump-autoload && php artisan optimize 
 
 php artisan make:model ProductOfferRequest -mcr
 

@@ -6,10 +6,9 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AppHelper{
-    
-    public static function DataPaginate($items, $perPage = 10)
-    {
 
+    public static function DataPaginate($items, $perPage)
+    {
         $currentPage = request()->get('page', 1); // Get current page from request
         $perPage = $perPage; // Number of items per page
         $offset = ($currentPage - 1) * $perPage;
