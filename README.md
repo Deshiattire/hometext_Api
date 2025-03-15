@@ -1,5 +1,6 @@
-php artisan cache:clear && php artisan route:clear && php artisan view:clear && composer clear-cache && php artisan config:clear && composer dump-autoload && php artisan optimize 
+ php artisan cache:clear && php artisan route:clear && php artisan view:clear && composer clear-cache && composer dump-autoload && php artisan config:clear
 
+ 
 php artisan make:model ProductOfferRequest -mcr (Model, Migration and Controller with resource)
 
 

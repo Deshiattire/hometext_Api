@@ -36,9 +36,9 @@ class ProductOfferRequestController extends Controller
     {
         try {
             $validator = Validator::make(
-                $request->only('priduct_id', 'quentity'),
+                $request->only('product_id', 'quentity'),
                 [
-                    'priduct_id' => 'required|int',
+                    'product_id' => 'required|int',
                     'quentity' => 'required|int',
                 ]
             );
