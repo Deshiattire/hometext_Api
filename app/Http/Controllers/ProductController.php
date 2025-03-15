@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AppHelper;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Resources\ProductDetailsResource;
 use App\Http\Resources\ProductListResource;
@@ -13,6 +14,7 @@ use App\Models\Country;
 use App\Models\FrequentlyBought;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductPriceDrop;
 use App\Models\ProductSeoMetaData;
 use App\Models\ProductSpecification;
 use App\Models\Shop;
@@ -22,9 +24,12 @@ use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 use function PHPUnit\Framework\isNull;
 
@@ -359,5 +364,48 @@ class ProductController extends Controller
         $products = (new Product())->getFindProduct($input);
         // dd(DB::getQueryLog());
         return ProductListResource::collection($products);
+    }
+
+    public function PriceDrop(Request $request){
+        try{
+            $validator = Validator::make(
+                $request->only('priduct_id'),
+                [
+                    'priduct_id' => 'required|int',
+                ]
+            );
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'status' => false,
+                        'message' => 'validation_err',
+                        'error' => $validator->errors()
+                    ],
+                    400
+                );
+            }
+
+            $priceDrop = ProductPriceDrop::create([
+                'priduct_id'    => $request->priduct_id,
+                'user_id'       => Auth::id(),
+            ]);
+
+            return AppHelper::ResponseFormat(true, 'Price-Drop request sent successfully.',  $priceDrop);
+        }catch(\Exception $e){
+            info("RestockRequest_FAILED", ['data' => $request->all(), 'error' => $e->getMessage()]);
+            return AppHelper::ResponseFormat(false, "Price-Drop sent faild.");
+        }
+    }
+
+    public function PriceDropList(Request $request){
+        try {
+            $priceDrop = ProductPriceDrop::where('user_id', Auth::id())->get();
+
+            return AppHelper::ResponseFormat(true, 'Price-Drop list found successfully.', $priceDrop);
+        } catch (\Exception $e) {
+            info("RestockRequest_FAILED", ['data' => $request->all(), 'error' => $e->getMessage()]);
+            return AppHelper::ResponseFormat(false, "Price-Drop list faild.");
+        }
     }
 }

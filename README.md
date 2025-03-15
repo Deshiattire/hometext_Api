@@ -1,6 +1,6 @@
 php artisan cache:clear && php artisan route:clear && php artisan view:clear && composer clear-cache && php artisan config:clear && composer dump-autoload && php artisan optimize 
 
-php artisan make:model ProductOfferRequest -mcr
+php artisan make:model ProductOfferRequest -mcr (Model, Migration and Controller with resource)
 
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

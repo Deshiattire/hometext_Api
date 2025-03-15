@@ -118,7 +118,12 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     Route::post('delete-wish-list', [WishListController::class, 'deleteWishlist']);
 
     Route::post('product/restock/request', [ProductOfferRequestController::class, 'RestockRequest']);
+    Route::get('product/restock/request-list', [ProductOfferRequestController::class, 'RestockRequestList']);
     Route::post('product/make-an-offer', [ProductOfferRequestController::class, 'MakeAnOffer']);
+    Route::get('product/make-an-offer-list', [ProductOfferRequestController::class, 'MakeAnOfferList']);
+
+    Route::post('product/price-drop', [ProductController::class, 'PriceDrop']);
+    Route::get('product/price-drop-list', [ProductController::class, 'PriceDropList']);
 
     ////Payment Gateway
     Route::get('get-token', [PaymentGatewayController::class, 'getToken']);

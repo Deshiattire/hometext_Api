@@ -30,9 +30,9 @@ class OrderController extends Controller
     {
         try {
             DB::beginTransaction();
-        $order =(new Order)->placeOrder($request->all(), auth()->user());
-        DB::commit();
-            return response()->json(['msg'=>'Order Placed Successfully', 'cls' => 'success', 'flag'=>1, 'order_id'=>$order->id]);
+            $order =(new Order)->placeOrder($request->all(), auth()->user());
+            DB::commit();
+            return response()->json(['msg'=>'Order Placed Successfully', 'cls' => 'success', 'flag'=>1, 'order_id'=> $order->id]);
         }catch (\Throwable $e){
             info('ORDER_PLACED_FAILED', ['message'=>$e->getMessage()]);
             DB::rollBack();

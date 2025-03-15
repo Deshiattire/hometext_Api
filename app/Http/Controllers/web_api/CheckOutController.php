@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -35,6 +36,7 @@ class CheckOutController extends Controller
      */
     final public function checkout(Request $request)
     {
+        Log::info($request->all());
 
         // http://127.0.0.1:8000/api/check-out
 
@@ -163,7 +165,7 @@ class CheckOutController extends Controller
                     }
                 }
 
-                // transaction 
+                // transaction
                 $transaction = new Transaction();
                 $transaction->order_id =  $new_order->id;
                 $transaction->customer_id =  $customer->id;
@@ -185,7 +187,7 @@ class CheckOutController extends Controller
 
             $success['return_payment_page'] = 'yes';
             $success['order_id'] = $new_order->id;
-            $success['payment_method'] = $request->payment_method;   // 1 cash on delivary 2=>Online 
+            $success['payment_method'] = $request->payment_method;   // 1 cash on delivary 2=>Online
 
 
             return response()->json(['status' => 200, 'message' => 'success', 'success' => $success], 200);
@@ -245,7 +247,7 @@ class CheckOutController extends Controller
                     $oder_details->save();
                 }
             }
-            // transaction 
+            // transaction
             $transaction = new Transaction();
             $transaction->order_id =  $new_order->id;
             $transaction->customer_id =  $customer->id;
@@ -262,7 +264,7 @@ class CheckOutController extends Controller
 
             $success['return_payment_page'] = 'yes';
             $success['order_id'] = $new_order->id;
-            $success['payment_method'] = $request->payment_method;   // 1 cash on delivary 2=>Online    
+            $success['payment_method'] = $request->payment_method;   // 1 cash on delivary 2=>Online
 
             return response()->json(['status' => 200, 'message' => 'success', 'success' => $success], 200);
         } else {
