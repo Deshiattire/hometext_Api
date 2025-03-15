@@ -30,8 +30,8 @@ class ProductOfferRequest extends Model
     /**
      * @return BelongsTo
      */
-    public function Product():BelongsTo
+    public function product()
     {
-        return $this->belongsTo(Product::class, 'priduct_id');
+        return $this->belongsTo(Product::class);
     }
 }

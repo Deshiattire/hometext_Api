@@ -71,7 +71,7 @@ class ProductOfferRequestController extends Controller
     public function RestockRequestList(Request $request)
     {
         try {
-            $restock = ProductOfferRequest::where('user_id', Auth::id())->where('type', "restock-request")->get();
+            $restock = ProductOfferRequest::with('product')->where('user_id', Auth::id())->where('type', "restock-request")->get();
 
             return AppHelper::ResponseFormat(true, 'Restock request list found successfully.', $restock);
         } catch (\Exception $e) {
@@ -123,7 +123,7 @@ class ProductOfferRequestController extends Controller
     public function MakeAnOfferList(Request $request)
     {
         try {
-            $offer = ProductOfferRequest::where('user_id', Auth::id())->where('type', "make-an-offer")->get();
+            $offer = ProductOfferRequest::with('product')->where('user_id', Auth::id())->where('type', "make-an-offer")->get();
 
             return AppHelper::ResponseFormat(true, 'Make an offer list found successfully.', $offer);
         } catch (\Exception $e) {
