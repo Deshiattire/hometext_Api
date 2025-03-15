@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_offer_requests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('priduct_id');
+            $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('user_id');
             $table->integer('quentity')->nullable();
             $table->integer('amount')->nullable();

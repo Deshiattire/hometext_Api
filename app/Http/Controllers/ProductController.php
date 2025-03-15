@@ -147,7 +147,6 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        Log::info($product);
         $productDetails = $product->load([
             'category:id,name',
             'photos:id,photo,product_id,is_primary',
@@ -369,9 +368,9 @@ class ProductController extends Controller
     public function PriceDrop(Request $request){
         try{
             $validator = Validator::make(
-                $request->only('priduct_id'),
+                $request->only('product_id'),
                 [
-                    'priduct_id' => 'required|int',
+                    'product_id' => 'required|int',
                 ]
             );
 
@@ -387,7 +386,7 @@ class ProductController extends Controller
             }
 
             $priceDrop = ProductPriceDrop::create([
-                'priduct_id'    => $request->priduct_id,
+                'product_id'    => $request->product_id,
                 'user_id'       => Auth::id(),
             ]);
 
@@ -400,7 +399,7 @@ class ProductController extends Controller
 
     public function PriceDropList(Request $request){
         try {
-            $priceDrop = ProductPriceDrop::where('user_id', Auth::id())->get();
+            $priceDrop = ProductPriceDrop::with('product')->where('user_id', Auth::id())->get();
 
             return AppHelper::ResponseFormat(true, 'Price-Drop list found successfully.', $priceDrop);
         } catch (\Exception $e) {

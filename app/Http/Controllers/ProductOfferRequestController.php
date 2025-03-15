@@ -55,7 +55,7 @@ class ProductOfferRequestController extends Controller
             }
 
             $restock = ProductOfferRequest::create([
-                'priduct_id'    => $request->priduct_id,
+                'product_id'    => $request->product_id,
                 'quentity'      => $request->quentity,
                 'user_id'       => Auth::id(),
                 'type'          => "restock-request"

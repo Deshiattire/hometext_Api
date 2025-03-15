@@ -12,7 +12,7 @@ class ProductOfferRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'priduct_id',
+        'product_id',
         'user_id',
         'quentity',
         'amount',
