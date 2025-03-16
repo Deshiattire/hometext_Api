@@ -38,6 +38,9 @@ class ProductEditResource extends JsonResource
             'discount_fixed'=>$this->discount_fixed . PriceManager::CURRENCY_SYMBOL,
             'discount_percent'=>$this->discount_percent . '%',
             'description'=>$this->description,
+            'meta_title'=>$this->meta_title,
+            'meta_keywords'=>$this->meta_keywords,
+            'meta_description'=>$this->meta_description,
             'discount_start'=>$this->discount_start != null ? Carbon::create($this->discount_start) ->toDayDateTimeString(): null,
             'discount_end'=>$this->discount_end != null ? Carbon::create($this->discount_end)->toDayDateTimeString():null,
             'shops' => $this->shops->map(function ($shop) {

@@ -66,7 +66,7 @@ class EcomUserController extends Controller
         }
     }
 
-    
+
     public function UserLogin(Request $request)
     {
         $validator = Validator::make(
@@ -209,7 +209,7 @@ class EcomUserController extends Controller
             ],
             400);
         }
-       
+
 
         if (!Hash::check($request->old_password, $user->password)) {
             return response()->json(['message' => 'Old password is incorrect'], 400);
@@ -253,7 +253,7 @@ class EcomUserController extends Controller
 
         // Send reset link via email
         $resetLink = env('FRONTEND_URL') . "/reset-password?token=$token&email=" . $request->email;
-        
+
 
         Mail::raw("Click the link to reset your password: $resetLink", function ($message) use ($request) {
             $message->to($request->email)
@@ -268,7 +268,7 @@ class EcomUserController extends Controller
                 'code' => 0
             ]
         ]);
-        
+
     }
 
     public function resetPassword(Request $request)
@@ -292,7 +292,7 @@ class EcomUserController extends Controller
         }
 
         // Get token record
-        $resetRecord = DB::table('password_resets')->where('email', $request->email)->first();
+        $resetRecord = DB::table('password_reset_tokens')->where('email', $request->email)->first();
 
 
         if (!$resetRecord || !Hash::check($request->token, $resetRecord->token)) {
@@ -305,7 +305,7 @@ class EcomUserController extends Controller
         $user->save();
 
         // Delete token record
-        DB::table('password_resets')->where('email', $request->email)->delete();
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return response()->json([
             'success' => true,

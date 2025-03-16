@@ -88,9 +88,9 @@ class ProductOfferRequestController extends Controller
     {
         try {
             $validator = Validator::make(
-                $request->only('priduct_id', 'amount'),
+                $request->only('product_id', 'amount'),
                 [
-                    'priduct_id' => 'required|int',
+                    'product_id' => 'required|int',
                     'amount' => 'required|int',
                 ]
             );
@@ -107,7 +107,7 @@ class ProductOfferRequestController extends Controller
             }
 
             $offer = ProductOfferRequest::create([
-                'priduct_id'    => $request->priduct_id,
+                'product_id'    => $request->product_id,
                 'amount'      => $request->amount,
                 'user_id'       => Auth::id(),
                 'type'          => "make-an-offer"
