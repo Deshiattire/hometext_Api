@@ -60,6 +60,12 @@ Route::post('/save-csv', [CsvController::class, 'saveCsv']);
 
 // Route::get('test', [scriptManager::class, 'getCountry']);
 Route::post('login', [AuthController::class, 'login']);
+// Customer Login
+Route::post('user-registration', [EcomUserController::class, 'registration']);
+Route::post('user-login', [EcomUserController::class, 'UserLogin']);
+Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
+Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
+
 Route::get('products-web', [ProductController::class, 'index']);
 Route::get('products-web/{product_id}', [ProductController::class, 'index']);
 Route::get('products-details-web/{id}', [ProductController::class, 'productsdetails']);
@@ -85,11 +91,7 @@ Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
 // Route::get('my-order', [CheckOutController::class, 'myorder']);
 
-// Customer Login
-Route::post('user-registration', [EcomUserController::class, 'registration']);
-Route::post('user-login', [EcomUserController::class, 'UserLogin']);
-Route::post('forgot-password', [EcomUserController::class, 'forgotPassword']);
-Route::post('reset-password', [EcomUserController::class, 'resetPassword']);
+
 
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 

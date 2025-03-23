@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateOrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -50,13 +51,13 @@ class OrderController extends Controller
             'customer',
             'payment_method',
             'sales_manager:id,name',
-            'shop', 'order_details',
+            'shop',
+            'order_details',
             'transactions',
             'transactions.customer',
             'transactions.payment_method',
             'transactions.transactionable',
-        ]
-        );
+        ]);
         return new  OrderDetailsResource($order);
     }
 

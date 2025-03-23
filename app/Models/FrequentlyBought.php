@@ -17,7 +17,7 @@ class FrequentlyBought extends Model
 
     public function productData($id){
         $res = self::query()->where('id', $id)->select('details')->first();
-        $productLink = json_decode($res['details'], true);
+        $productLink = json_decode($res->details, true);
         $products = collect();
         $data = [] ;
 

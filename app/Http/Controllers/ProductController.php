@@ -76,9 +76,13 @@ class ProductController extends Controller
             'product_specifications.specifications'
         ])->where('id', $id)->first();
 
+        $products->setHidden(['frequently_bought_id']);
+
         if($products){
             if($products->frequently_bought_id){
                 $products['frequentlyBought'] = (new FrequentlyBought())->productData($products->frequently_bought_id);
+            }else{
+                $products['frequentlyBought'] = [];
             }
 
             if(!empty($products['realted_product'])){
@@ -341,11 +345,24 @@ class ProductController extends Controller
             ]);
         }
 
-        $products = collect();
-
-        $products = Product::join('product_attributes', 'product_attributes.product_id', '=', 'products.id')
-            ->where('product_attributes.attribute_id', $input['attributeId'])
-            ->where('product_attributes.attribute_value_id', $input['attributeValueId'])
+        $products = Product::with([
+            'category:id,name',
+            'sub_category:id,name',
+            'child_sub_category:id,name',
+            'brand:id,name',
+            'country:id,name',
+            'supplier:id,name,phone',
+            'created_by:id,first_name,last_name',
+            'updated_by:id,first_name,last_name',
+            'primary_photo',
+            'product_attributes.attributes',
+            'product_attributes.attribute_value',
+            'product_specifications.specifications'
+            ])
+            ->whereHas('product_attributes', function ($query) use ($input) {
+                $query->whereIn('attribute_id', [$input['attributeId']])
+                      ->whereIn('attribute_value_id', [$input['attributeValueId']]);
+            })
             ->get();
 
         return response()->json([

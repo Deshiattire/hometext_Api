@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Order extends Model
 {
@@ -36,6 +37,14 @@ class Order extends Model
                 ]
         );
         if(!$is_admin){
+            // if (!empty($input['search'])) {
+            //     $query->where('order_number', 'like', '%' . $input['search'] . '%');
+            // }
+
+            if (!empty($input['order_by'])) {
+                $query->orderBy($input['order_by'], $input['direction'] ?? 'desc');
+            }
+
             $query->where('shop_id', $auth->user()->shop_id);
         }
         return $query->paginate(10);

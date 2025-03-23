@@ -4,6 +4,7 @@ namespace App\Manager;
 
 use App\Models\Product;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class OrderManager{
 
@@ -27,9 +28,10 @@ class OrderManager{
         $total = 0;
         $quantity = 0;
         $order_details = [];
+
         if(isset($input['carts'])){
             foreach($input['carts'] as $key => $cart){
-                $product = (new Product())->getProductById($key);
+                $product = (new Product())->getProductById($cart['productId']);
                 if($product && $product->stock >= $cart['quantity']){
                     $price = PriceManager::calculate_sell_price($product->price, $product->discount_percent, $product->discount_fixed, $product->discount_start, $product->discount_end );
                     $discount += $price['discount'] * $cart['quantity'];
