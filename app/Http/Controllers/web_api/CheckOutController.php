@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers\web_api;
 
+use App\Helpers\AppHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CheckoutRequest;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetails;
+use App\Models\OrderGift;
+use App\Models\Product;
+use App\Models\ProductMenu;
 use App\Models\Transaction;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -24,10 +30,10 @@ class CheckOutController extends Controller
     const GUEST_USER = 2;
     const RETURN_USER = 3;
 
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['checkout', 'myorder']]);
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:api', ['except' => ['checkout', 'myorder']]);
+    // }
 
 
     /**
@@ -275,27 +281,151 @@ class CheckOutController extends Controller
         }
     }
 
-    public function myorder()
-    {
-        if (Auth::check()) {
-            return response()->json([
-                'status' => 'success',
-                'user' => Auth::user(),
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'user' => [],
-            ], 200);
+    public function orderCheckout(Request $request){
+        Log::info($request);
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'country' => 'required|string|max:100',
+            'post_code' => 'required|string|max:20',
+            'division' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+
+            'order.sub_total' => 'required|numeric|min:0',
+            'order.total_discount' => 'required|numeric|min:0',
+            'order.vat' => 'required|numeric|min:0',
+            'order.tex' => 'required|numeric|min:0',
+            'order.total' => 'required|numeric|min:0',
+            'order.coupon' => 'nullable|string|max:50',
+            'order.delivery_fee' => 'required|numeric|min:0',
+            'order.item_quentity' => 'required|integer|min:1',
+            'order.items' => 'required|array|min:1',
+            'order.items.*.product_id' => 'required|integer|distinct',
+            'order.items.*.quentity' => 'required|integer|min:1',
+            'order.items.*.discount' => 'required|numeric|min:0',
+
+            'gift.wrapping' => 'nullable|in:yes,no',
+            'gift.sender_name' => 'nullable|string|max:255',
+            'gift.recipient_name' => 'nullable|string|max:255',
+            'gift.message' => 'nullable|string|max:1000',
+
+            'payment.payment_methode' => 'required|numeric',
+            'payment.details' => 'nullable|string|max:1000',
+        ]);
+
+
+
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'message' => 'validation_err',
+                    'error' => $validator->errors()
+                ],
+                400
+            );
         }
+
+        dd($request->all());
+
+        DB::beginTransaction();
+        try{
+
+
+
+            $customer =  Customer::where('user_id', '=', Auth::user()->id)->first();
+            $customer_id = null;
+
+            if (empty($customer)) {
+                $customer = new Customer();
+                $customer->user_id = Auth::user()->id;
+                $customer->name =  Auth::user()->first_name. ' '.Auth::user()->last_name;
+                $customer->phone =  Auth::user()->phone;
+                $customer->email =  Auth::user()->email;
+                $customer->save();
+                //customer id
+                $customer_id = $customer->id;
+            } else{
+                $customer_id = $customer->id;
+            }
+
+            $new_order = new Order();
+            $new_order->customer_id = $customer_id;
+            $new_order->sub_total = $request->total_payable_amount;
+            $new_order->discount = $request->discount;
+            $new_order->total = $request->total;
+            $new_order->quantity = $request->item_quentity;
+            $new_order->paid_amount = $request->total;
+            $new_order->order_number = 'HTB' . date('ymdHis') . Auth::user()->id;
+            $new_order->payment_method_id = $request->payment_method;
+            $new_order->shop_id = 4;
+            $new_order->sales_manager_id = 0;
+            $new_order->save();
+
+            $order_data = json_decode($request->items, true);
+
+            if ($order_data) {
+                foreach ($order_data as $key => $value) {
+                    $product = Product::where('id',$value['product_id'])->first();
+                    $oder_details = new OrderDetails();
+                    $oder_details->name = $product->name;
+                    $oder_details->sku = $product->sku;
+                    $oder_details->photo = $product->primary_photo();
+                    $oder_details->cost = $product->cost;
+                    $oder_details->price = $product->price;
+                    $oder_details->quentity = $value['quentity'];
+                    $oder_details->discount_fixed = $product->discount_fixed;
+                    $oder_details->discount_percent =$product->discount_percent;
+                    $oder_details->discount_start = $product->discount_start;
+                    $oder_details->discount_end = $product->discount_end;
+                    $oder_details->order_id = $new_order->id;
+                    $oder_details->brand_id = $product->brand_id;
+                    $oder_details->category_id = $product->category_id;
+                    $oder_details->sub_category_id = $product->sub_category_id;
+                    $oder_details->child_sub_category_id = $product->child_sub_category_id;
+                    $oder_details->supplier_id = $product->supplier_id;
+                    $oder_details->save();
+                }
+            }
+
+            $payment_data = json_decode($request->payment, true);
+
+            // transaction
+            $transaction = new Transaction();
+            $transaction->order_id =  $new_order->id;
+            $transaction->customer_id =  $customer_id;
+            $transaction->transactionable_type =  'ecommerce';
+            $transaction->transactionable_id =  Auth::user()->id;
+            $transaction->transaction_type =  '1';
+            $transaction->payment_method_id =  $payment_data['payment_methode'];
+            $transaction->status =  1;
+            $transaction->amount =  $request->total;
+            $transaction->payment_details =  $payment_data['details'];
+            $transaction->save();
+
+            $gift_data = json_decode($request->gift, true);
+            // Gift
+            $gift = new OrderGift();
+            $gift->wrapping = $gift_data['wrapping'];
+            $gift->sender_name = $gift_data['sender_name'];
+            $gift->recipient_name = $gift_data['recipient_name'];
+            $gift->message = $gift_data['message'];
+            $gift->save();
+
+
+
+
+            DB::commit();
+            return AppHelper::ResponseFormat(true,"Customer order not found", $request->all());
+        }catch(Exception $ex){
+            info('CHECKOUT_FAILED', ['message'=>$ex->getMessage()]);
+            DB::rollBack();
+            return AppHelper::ResponseFormat(false,"Checkout faild",null, $ex->getMessage());
+        }
+
     }
 
-    // protected function createNewToken($token){
-    //     return response()->json([
-    //         'access_token' => $token,
-    //         'token_type' => 'bearer',
-    //         'expires_in' => auth()->factory()->getTTL() * 60,
-    //         'user' => auth()->user()
-    //     ]);
-    // }
 }

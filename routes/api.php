@@ -89,7 +89,8 @@ Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::clas
 
 Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
-// Route::get('my-order', [CheckOutController::class, 'myorder']);
+
+Route::post('guest-checkout', [CheckOutController::class, 'orderCheckout'])->name("guest-checkout");
 
 
 
@@ -110,9 +111,12 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     Route::post('user-password-change', [EcomUserController::class, 'UserPasswordChange']);
 
     Route::get('my-order', [OrderDetailsController::class, 'myorder']);
+    Route::get('order-detailsr/{orderNo}', [OrderDetailsController::class, 'myOrderDetails']);
 
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);
     Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+
+    Route::post('order-checkout', [CheckOutController::class, 'orderCheckout'])->name("order-checkout");
 
     // Manage wishlist
     Route::post('wish-list', [WishListController::class, 'wishlist']);

@@ -6,6 +6,7 @@ use App\Helpers\AppHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderDetails;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -27,11 +28,24 @@ class OrderDetailsController extends Controller
             }else{
                 return AppHelper::ResponseFormat(true,"Customer order not found", $order);
             }
-            
+
         } else {
             return AppHelper::ResponseFormat(true,"Customer not found", $order);
         }
-        
-        
+    }
+
+    public function myOrderDetails($orderNo)
+    {
+        $order = Order::where("order_number", $orderNo)->first();
+        if($order){
+            $details = OrderDetails::where('order_id', $order->id)->get();
+            if($details){
+                return AppHelper::ResponseFormat(true,"Order details found", $details);
+            }else{
+                return AppHelper::ResponseFormat(true,"Order details not found", $details);
+            }
+        }else{
+            return AppHelper::ResponseFormat(false,"Customer not found", $order);
+        }
     }
 }
