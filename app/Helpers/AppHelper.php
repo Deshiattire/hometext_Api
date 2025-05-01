@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Http;
 
 class AppHelper{
 
@@ -32,5 +33,28 @@ class AppHelper{
             'data' => $data,
             'error' => $errorMessage
         ], $status? 200: 400);
+    }
+
+    public static function SteadfastOrder($data){
+        $response = Http::withHeaders([
+            'Api-Key' => env('STEADFAST_API_KEY'),
+            'Secret-Key' => env('STEADFAST_SECRET_KEY'),
+            'Content-Type' => 'application/json'
+
+        ])->post('https://portal.packzy.com/api/v1/create_order/bulk-order', [
+            'data' => $data,
+        ]);
+
+        return json_decode($response->getBody()->getContents());
+    }
+
+    public static function SteadfastOrderTracking($trackingNumber){
+        $response = Http::withHeaders([
+            'Api-Key' => env('STEADFAST_API_KEY'),
+            'Secret-Key' => env('STEADFAST_SECRET_KEY')
+
+        ])->get('https://portal.packzy.com/api/v1/status_by_trackingcode/'.$trackingNumber);
+
+        return json_decode($response->getBody()->getContents());
     }
 }
