@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('order_gifts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->tinyInteger('wrapping')->default(1)->comment('1=wrapping, 2=not wrapping');
+            $table->enum('is_gift', ['yes', 'no'])->default('no');
             $table->string('sender_name', 150);
             $table->string('recipient_name', 150);
             $table->string('message', 250);

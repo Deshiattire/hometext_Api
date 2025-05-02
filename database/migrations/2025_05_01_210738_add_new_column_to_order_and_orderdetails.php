@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->string('shipment_track_no', 50)->nullable()->after('order_number');
-            $table->tinyInteger('is_gift')->default(0)->after('order_number');
+            $table->enum('is_gift', ['yes', 'no'])->default('no')->after('order_number');
             $table->string('coupon', 20)->nullable()->after('order_number');
         });
 
