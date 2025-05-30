@@ -15,6 +15,7 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\DivisionController;
+use App\Http\Controllers\GiftController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentGatewayController;
 use App\Http\Controllers\PaymentMethodController;
@@ -100,7 +101,9 @@ Route::post('guest-checkout', [CheckOutController::class, 'orderCheckout'])->nam
 
 // Route::apiResource('product', ProductController::class);
 
-
+/**
+ * For e-commerce customer
+ */
 Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     // order details
     Route::get('my-order-list', [OrderDetailsController::class, 'myorder']);
@@ -143,8 +146,16 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:customer']], function () {
     Route::get('product-user-wise-review', [ReviewController::class, 'ProductUserWiseStarRating']);
     Route::get('product-wise-review/{product_id}', [ReviewController::class, 'ProductWiseStarRating']);
 
+    Route::get('gift-card-list', [GiftController::class, 'showGiftCardList']);
+
+    Route::get('gift-product-list', [GiftController::class, 'showGiftProductList']);
+
 });
 
+
+/**
+ * For app admin
+ */
 Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('get-attribute-list', [AttributeController::class, 'get_attribute_list']);
@@ -183,7 +194,9 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
     Route::put('product-menu-list-edit/{id}', [ProductMenuController::class, 'MenuListUpdate']);
 });
 
-
+/**
+ * For app manager
+ */
 Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::apiResource('sales-manager', SalesManagerController::class);
