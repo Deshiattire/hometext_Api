@@ -23,7 +23,7 @@ return new class extends Migration
         });
 
         Schema::table('customers', function (Blueprint $table) {
-            $table->test('address')->nullable()->after('email');
+            $table->string('address')->nullable()->after('email');
         });
     }
 
