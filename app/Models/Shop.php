@@ -14,7 +14,7 @@ class Shop extends Model
     use HasFactory;
 
     // Define the fillable attributes
-    protected $fillable = ['details', 'email', 'logo', 'name', 'phone', 'status', 'user_id'];
+    protected $fillable = ['details', 'email', 'logo', 'name', 'phone', 'status', 'user_id', 'slug'];
 
     // Define constants for shop status
     public const STATUS_ACTIVE = 1;

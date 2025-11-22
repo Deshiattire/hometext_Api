@@ -31,6 +31,7 @@ class AuthController extends Controller
             $user= (new SalesManager())->getUserEmailOrPhone($request->all());
             $role = self::SALES_MANAGER;
         }
+        dd($user);
         if($user && Hash::check($request->input('password'), $user->password)){
             $branch =  null;
             if($role == self::SALES_MANAGER){

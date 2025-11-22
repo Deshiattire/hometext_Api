@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProductSpecification extends Model
 {
     use HasFactory;
-    protected $fillable = ['product_id','name','value'];
+    protected $fillable = ['product_id','group','name','value'];
 
 
     /**

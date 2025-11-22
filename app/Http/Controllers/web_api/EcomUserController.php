@@ -88,39 +88,6 @@ class EcomUserController extends Controller
         }
     }
 
-    public function UserLogin(Request $request)
-    {
-        $fields['email'] = 'required';
-        $fields['password'] = 'required|min:6|max:12';
-
-        // $fields['is_subscribe'] = 'required';
-
-        $validator = Validator::make($request->all(), $fields);
-        if ($validator->fails()) {
-            return response()->json(['status' => 400, 'message' => 'validation_err', 'error' => $validator->errors()], 400);
-        }
-
-        $input = $request->all();
-        $user = (new User())->getUserEmailOrPhone($request->all());
-        $input['password'] = Hash::make($input['password']);
-
-        if ($user) {
-            if($user->role_id == 3 && Hash::check($request->input('password'), $user->password)){
-                $user_data['token'] = $user->createToken($user->email)->plainTextToken;
-                $user_data['name'] = $user->name;
-                $user_data['phone'] = $user->phone;
-                $user_data['photo'] = $user->photo;
-                $user_data['email'] = $user->email;
-                return response()->json($user_data);
-            }
-            else {
-                return response()->json(['status' => 500, 'message' => 'auth_err', 'error' => 'Authentication failed'], 500);
-            }
-        } else {
-            return response()->json(['status' => 500, 'message' => 'auth_err', 'error' => 'The Provided credentials are incorrect'], 500);
-        }
-    }
-
     // // myprofile
     public function myprofile()
     {

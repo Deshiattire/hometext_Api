@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreProductReviewRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true; // Public endpoint - anyone can submit a review
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'product_id' => 'required|integer|exists:products,id',
+            'reviewer_name' => 'required|string|max:255',
+            'reviewer_email' => 'required|email|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'title' => 'nullable|string|max:255',
+            'review' => 'nullable|string|max:5000',
+            'is_verified_purchase' => 'sometimes|boolean',
+            'is_recommended' => 'sometimes|boolean',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'product_id.required' => 'Product ID is required',
+            'product_id.exists' => 'Selected product does not exist',
+            'reviewer_name.required' => 'Your name is required',
+            'reviewer_email.required' => 'Your email is required',
+            'reviewer_email.email' => 'Please provide a valid email address',
+            'rating.required' => 'Rating is required',
+            'rating.min' => 'Rating must be at least 1 star',
+            'rating.max' => 'Rating cannot exceed 5 stars',
+        ];
+    }
+}
