@@ -1,0 +1,46 @@
+name: Deploy to cPanel (FTP)
+
+on:
+  push:
+    branches:
+      - main   # change to master if your repo uses master
+
+jobs:
+  ftp-deploy:
+    name: FTP Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # If it's a Laravel project, uncomment these 5 steps ↓
+      # - name: Install PHP
+      #   uses: shivammathur/setup-php@v2
+      #   with:
+      #     php-version: '8.1'
+      #
+      # - name: Install Composer dependencies
+      #   run: composer install --no-dev --optimize-autoloader
+      #
+      # - name: Run Laravel build steps
+      #   run: |
+      #     php artisan config:cache
+      #     php artisan route:cache
+      #     php artisan view:cache
+
+      - name: Upload via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_PATH }}
+          exclude: |
+            **/.git*
+            **/.github*
+            **/node_modules/**
+            **/vendor/**
