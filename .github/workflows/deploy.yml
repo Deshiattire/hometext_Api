@@ -3,7 +3,7 @@ name: Deploy to cPanel (FTP)
 on:
   push:
     branches:
-      - main   # change to master if your repo uses master
+      - master   # change to master if your repo uses master
 
 jobs:
   ftp-deploy:
