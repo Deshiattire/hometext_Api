@@ -18,8 +18,12 @@ class ProductPhotoListResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'photo' => ImageUploadManager::prepareImageUrl(ProductPhoto::THUMB_PHOTO_UPLOAD_PATH, $this->photo),
-            'photo_original' => ImageUploadManager::prepareImageUrl(ProductPhoto::PHOTO_UPLOAD_PATH, $this->photo),
+            'url' => ImageUploadManager::prepareImageUrl(ProductPhoto::PHOTO_UPLOAD_PATH, $this->photo),
+            'thumbnail' => ImageUploadManager::prepareImageUrl(ProductPhoto::THUMB_PHOTO_UPLOAD_PATH, $this->photo),
+            'alt_text' => $this->alt_text ?? '',
+            'width' => $this->width ?? null,
+            'height' => $this->height ?? null,
+            'position' => $this->position ?? 0,
         ];
     }
 }

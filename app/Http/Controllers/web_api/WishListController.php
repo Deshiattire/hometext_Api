@@ -64,10 +64,25 @@ class WishListController extends Controller
     }
 
     public function getWishlist(Request $request){
+        if (!Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'wishlist' => 'Unauthenticated',
+            ], 401);
+        }
+
         $customer = Customer::where('user_id', '=', Auth::user()->id)->first();
+        
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'wishlist' => 'Customer not found',
+            ], 404);
+        }
+
         $wishlist = WishList::where('customer_id', '=', $customer->id)->where('is_wish', '=', 1)->get();
 
-        if($wishlist != null){
+        if($wishlist != null && $wishlist->count() > 0){
             return response()->json([
                 'status' => true,
                 'wishlist' => $wishlist,
@@ -81,6 +96,13 @@ class WishListController extends Controller
     }
 
     public function deleteWishlist(Request $request){
+        if (!Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'wishlist' => 'Unauthenticated',
+            ], 401);
+        }
+
         $fields['product_id'] = 'required';
         $validator = Validator::make($request->all(), $fields);
         if ($validator->fails()) {
@@ -88,6 +110,14 @@ class WishListController extends Controller
         }
 
         $customer = Customer::where('user_id', '=', Auth::user()->id)->first();
+        
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'wishlist' => 'Customer not found',
+            ], 404);
+        }
+
         $wishlist = WishList::where('customer_id', '=', $customer->id)
                     ->where('is_wish', '=', 1)
                     ->where('product_id', '=', $request->product_id)

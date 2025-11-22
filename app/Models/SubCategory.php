@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CategoryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -12,6 +13,21 @@ use Illuminate\Support\Collection;
 class SubCategory extends Model
 {
     use HasFactory;
+    
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        // Clear menu cache when subcategory is created, updated, or deleted
+        static::saved(function () {
+            app(CategoryService::class)->clearMenuCache();
+        });
+        
+        static::deleted(function () {
+            app(CategoryService::class)->clearMenuCache();
+        });
+    }
     public const IMAGE_UPLOAD_PATH = 'images/uploads/sub_category/';
     public const THUMB_IMAGE_UPLOAD_PATH = 'images/uploads/sub_category_thumb/';
     public const STATUS_ACTIVE = 1;

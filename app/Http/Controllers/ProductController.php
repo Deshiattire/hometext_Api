@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IndexProductRequest;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Resources\CategoryMenuResource;
 use App\Http\Resources\ProductDetailsResource;
 use App\Http\Resources\ProductListResource;
+use App\Services\CategoryService;
+use App\Services\ProductService;
 use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
@@ -17,6 +21,7 @@ use App\Models\ProductSpecification;
 use App\Models\Shop;
 use App\Models\SubCategory;
 use App\Models\Supplier;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -27,30 +32,378 @@ use Illuminate\Support\Facades\Schema;
 class ProductController extends Controller
 {
     /**
-     * @param Request $request
-     * @return AnonymousResourceCollection
+     * Display a paginated listing of products
+     *
+     * @param IndexProductRequest $request
+     * @param ProductService $productService
+     * @return JsonResponse
      */
-    public function index(Request $request, $is_all = 'yes'): AnonymousResourceCollection
+    public function index(IndexProductRequest $request, ProductService $productService): JsonResponse
     {
-        // DB::enableQueryLog();
-        $input = [
-            'per_page' => $request->input('per_page'),
-            'search' => $request->input('search'),
-            'order_by' => $request->input('order_by'),
-            'direction' => $request->input('direction'),
-        ];
+        try {
+            $perPage = $request->validated()['per_page'] ?? 20;
+            
+            $filters = [
+                'search' => $request->validated()['search'] ?? null,
+                'category_id' => $request->validated()['category_id'] ?? null,
+                'brand_id' => $request->validated()['brand_id'] ?? null,
+                'status' => $request->validated()['status'] ?? null,
+                'order_by' => $request->validated()['order_by'] ?? 'created_at',
+                'direction' => $request->validated()['direction'] ?? 'desc',
+            ];
 
-        $products = (new Product())->getProductList($input, $is_all);
-        // dd(DB::getQueryLog());
-        return ProductListResource::collection($products);
+            // Remove null values from filters
+            $filters = array_filter($filters, fn($value) => $value !== null);
+
+            $products = $productService->getPaginatedProducts($filters, $perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'from' => $products->firstItem(),
+                    'to' => $products->lastItem(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Products retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve products', $e->getMessage(), 500);
+        }
+    }
+
+        /**
+     * Display the specified product
+     *
+     * @param int $id
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function show(int $id, ProductService $productService): JsonResponse
+    {
+        try {
+            $product = $productService->getProductById($id);
+            
+            return $this->success(
+                new ProductDetailsResource($product),
+                'Product retrieved successfully'
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error('Product not found', null, 404);
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve product', $e->getMessage(), 500);
+        }
     }
 
     /**
-     *product details for web
+     * Display the specified product by slug
+     *
+     * @param string $slug
+     * @param ProductService $productService
+     * @return JsonResponse
      */
-
-    final public function productsdetails($id)
+    public function showBySlug(string $slug, ProductService $productService): JsonResponse
     {
+        try {
+            $product = $productService->getProductBySlug($slug);
+            
+            return $this->success(
+                new ProductDetailsResource($product),
+                'Product retrieved successfully'
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error('Product not found', null, 404);
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve product', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get featured products
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function featured(Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getFeaturedProducts($perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Featured products retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve featured products', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get new arrivals
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function newArrivals(Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getNewArrivals($perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'New arrivals retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve new arrivals', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get trending products
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function trending(Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getTrendingProducts($perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Trending products retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve trending products', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get bestsellers
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function bestsellers(Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getBestsellers($perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Bestsellers retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve bestsellers', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get products on sale
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function onSale(Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getOnSaleProducts($perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Products on sale retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve products on sale', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get similar products
+     *
+     * @param int $id
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function similar(int $id, Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getSimilarProducts($id, $perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Similar products retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve similar products', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get product recommendations
+     *
+     * @param int $id
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function recommendations(int $id, Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $relationType = $request->input('type', 'frequently_bought_together'); // frequently_bought_together, customers_also_viewed
+            $products = $productService->getRecommendations($id, $relationType, $perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Product recommendations retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve recommendations', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get products by category
+     *
+     * @param int $categoryId
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function byCategory(int $categoryId, Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getProductsByCategory($categoryId, $perPage);
+            
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Products by category retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve products by category', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get products by brand
+     *
+     * @param int $brandId
+     * @param Request $request
+     * @param ProductService $productService
+     * @return JsonResponse
+     */
+    public function byBrand(int $brandId, Request $request, ProductService $productService): JsonResponse
+    {
+        try {
+            $perPage = $request->input('per_page', 20);
+            $products = $productService->getProductsByBrand($brandId, $perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Products by brand retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve products by brand', $e->getMessage(), 500);
+        }
+    }
+
+/**
+     * Get category menu with subcategories and child subcategories
+     * Optimized with caching for performance
+     *
+     * @param CategoryService $categoryService
+     * @return JsonResponse
+     */
+    public function ProductMenu(CategoryService $categoryService): JsonResponse
+    {
+        try {
+            $menu = $categoryService->getMenu();
+            
+            return $this->success(
+                CategoryMenuResource::collection($menu),
+                'Menu retrieved successfully'
+            );
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve menu', $e->getMessage(), 500);
+        }
+    }
+    
+    /**
+     *product details for web (legacy route)
+     */
+    public function productsdetails($id)
+    {
+        // dd($id);
         $products = Product::query()->with([
             'category:id,name',
             'sub_category:id,name',
@@ -58,19 +411,21 @@ class ProductController extends Controller
             'brand:id,name',
             'country:id,name',
             'supplier:id,name,phone',
-            'created_by:id,name',
-            'updated_by:id,name',
+            'created_by:id,first_name,last_name',
+            'updated_by:id,first_name,last_name',
             'primary_photo',
             'product_attributes',
             'product_attributes.attributes',
             'product_attributes.attribute_value',
             'product_specifications.specifications',
-            'seo_meta.seoMetaData'
+            'seo_meta'
         ])->where('id', $id)->first();
         return response()->json($products);
     }
 
 
+
+/** ===============Admin Routes =============== */
     /**
      * @param StoreProductRequest $request
      * @return JsonResponse
@@ -110,33 +465,6 @@ class ProductController extends Controller
             DB::rollBack();
             return response()->json(['msg' => $e->getMessage(), 'cls' => 'warning']);
         }
-    }
-
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product)
-    {
-        $productDetails = $product->load([
-            'category:id,name',
-            'photos:id,photo,product_id,is_primary',
-            'sub_category:id,name',
-            'child_sub_category:id,name',
-            'brand:id,name',
-            'country:id,name',
-            'supplier:id,name,phone',
-            'created_by:id,name',
-            'updated_by:id,name',
-            'primary_photo',
-            'product_attributes',
-            'product_attributes.attributes',
-            'product_attributes.attribute_value',
-            'seo_meta.seoMetaData'
-        ]);
-
-        return new ProductDetailsResource($productDetails);
     }
 
     /**
@@ -318,20 +646,5 @@ class ProductController extends Controller
             'cls' => 'success',
             'product_id' => $newProduct->id
         ]);
-    }
-
-
-    public function ProductMenu(): JsonResponse
-    {
-        $product = Category::select('id', 'name', 'image')->with([
-            'subCategories' => function($query) {
-                $query->select('id', 'name', 'category_id'); // Don't forget to include the foreign key
-            },
-            'subCategories.childSubCategories' => function($query) {
-                $query->select('id', 'name', 'sub_category_id'); // Don't forget the foreign key here too
-            }
-        ])->get();
-        return response()->json($product);
-
     }
 }

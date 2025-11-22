@@ -1,0 +1,537 @@
+Standard Product Detail API Response Structure
+Endpoint: GET /api/v1/products/{id} or GET /api/v1/products/slug/{slug}
+
+json
+{
+  "success": true,
+  "data": {
+    // ===== BASIC PRODUCT INFORMATION =====
+    "id": 412,
+    "sku": "8569",
+    "name": "New bed sheet",
+    "slug": "new-bed-sheet",
+    "description": "<p>High-quality bedsheet made from premium cotton</p>",
+    "short_description": "Premium cotton bedsheet for ultimate comfort",
+    "status": "active",  // active, draft, archived
+    "visibility": "visible",  // visible, catalog, search, hidden
+    "type": "simple",  // simple, variable, grouped, bundle
+    
+    // ===== CATEGORIZATION =====
+    "category": {
+      "id": 12,
+      "name": "Bedding",
+      "slug": "bedding",
+      "level": 1
+    },
+    "sub_category": {
+      "id": 12,
+      "name": "Bed Sheet Set",
+      "slug": "bed-sheet-set",
+      "level": 2
+    },
+    "child_sub_category": {
+      "id": 7,
+      "name": "Single",
+      "slug": "single",
+      "level": 3
+    },
+    "breadcrumb": [
+      {"id": 12, "name": "Bedding", "slug": "bedding"},
+      {"id": 12, "name": "Bed Sheet Set", "slug": "bed-sheet-set"},
+      {"id": 7, "name": "Single", "slug": "single"}
+    ],
+    "tags": ["cotton", "premium", "comfortable", "single-bed"],
+    
+    // ===== BRAND & MANUFACTURER =====
+    "brand": {
+      "id": 2,
+      "name": "Hometex Bangladesh M.",
+      "slug": "hometex-bangladesh",
+      "logo": "https://example.com/brands/hometex-logo.png"
+    },
+    "manufacturer": {
+      "id": 5,
+      "name": "Hometex Bangladesh Manufactory",
+      "country": "Bangladesh"
+    },
+    "country_of_origin": {
+      "id": 10,
+      "name": "Bangladesh",
+      "code": "BD"
+    },
+    
+    // ===== PRICING & OFFERS =====
+    "pricing": {
+      "currency": "BDT",
+      "currency_symbol": "৳",
+      "cost_price": 550.00,  // wholesale/cost price
+      "regular_price": 650.00,  // original price
+      "sale_price": 585.00,  // current selling price (if on sale)
+      "final_price": 585.00,  // price customer pays
+      "discount": {
+        "type": "percentage",  // percentage, fixed, none
+        "value": 10,
+        "amount": 65.00,
+        "start_date": "2025-03-23T22:37:00Z",
+        "end_date": "2025-03-31T22:37:00Z",
+        "is_active": true,
+        "remaining_days": 7
+      },
+      "tax": {
+        "rate": 15,  // percentage
+        "amount": 87.75,
+        "included": false,  // whether tax is included in price
+        "class": "standard"
+      },
+      "profit_margin": {
+        "amount": 100.00,
+        "percentage": 15.38
+      },
+      "price_range": null  // for variable products: {"min": 500, "max": 700}
+    },
+    
+    // ===== INVENTORY & STOCK =====
+    "inventory": {
+      "stock_status": "in_stock",  // in_stock, out_of_stock, on_backorder, preorder
+      "stock_quantity": 71,
+      "low_stock_threshold": 10,
+      "is_low_stock": false,
+      "allow_backorders": false,
+      "manage_stock": true,
+      "stock_by_location": [
+        {
+          "shop_id": 1,
+          "shop_name": "Main Branch",
+          "shop_slug": "main-branch",
+          "quantity": 50,
+          "reserved": 5
+        },
+        {
+          "shop_id": 4,
+          "shop_name": "Ecommerce Warehouse",
+          "shop_slug": "ecommerce",
+          "quantity": 28,
+          "reserved": 2
+        }
+      ],
+      "sold_count": 245,  // total units sold
+      "restock_date": null  // "2025-04-15T00:00:00Z" if out of stock
+    },
+    
+    // ===== PRODUCT VARIATIONS (For variable products) =====
+    "has_variations": false,
+    "parent_id": null,  // if this is a variation, parent product id
+    "variations": [],  // array of variant objects (see variation structure below)
+    "attributes": [
+      // Used to generate variations
+      {
+        "id": 1,
+        "name": "Size",
+        "slug": "size",
+        "type": "select",  // select, color, button, radio
+        "visible": true,
+        "variation": false,  // true if used for variations
+        "options": ["Single", "Double", "Queen", "King"],
+        "selected": "Single"
+      },
+      {
+        "id": 2,
+        "name": "Material",
+        "slug": "material",
+        "type": "select",
+        "visible": true,
+        "variation": false,
+        "options": ["Cotton", "Polyester", "Silk"],
+        "selected": "Cotton"
+      }
+    ],
+    
+    // ===== SPECIFICATIONS (Technical details) =====
+    "specifications": [
+      {
+        "group": "Dimensions",
+        "attributes": [
+          {"name": "Length", "value": "200 cm"},
+          {"name": "Width", "value": "150 cm"},
+          {"name": "Height", "value": "2 cm"}
+        ]
+      },
+      {
+        "group": "Physical",
+        "attributes": [
+          {"name": "Weight", "value": "1.5 kg"},
+          {"name": "Material", "value": "100% Cotton"},
+          {"name": "Thread Count", "value": "300"}
+        ]
+      },
+      {
+        "group": "Care Instructions",
+        "attributes": [
+          {"name": "Washing", "value": "Machine wash cold"},
+          {"name": "Drying", "value": "Tumble dry low"},
+          {"name": "Ironing", "value": "Iron on medium heat"}
+        ]
+      }
+    ],
+    
+    // ===== MEDIA =====
+    "media": {
+      "primary_image": {
+        "id": 1001,
+        "url": "https://cdn.example.com/products/bed-sheet-main.jpg",
+        "thumbnail": "https://cdn.example.com/products/bed-sheet-main-thumb.jpg",
+        "alt_text": "Premium cotton bed sheet in white",
+        "width": 1200,
+        "height": 1200
+      },
+      "gallery": [
+        {
+          "id": 1002,
+          "url": "https://cdn.example.com/products/bed-sheet-detail.jpg",
+          "thumbnail": "https://cdn.example.com/products/bed-sheet-detail-thumb.jpg",
+          "alt_text": "Close-up of bed sheet texture",
+          "width": 1200,
+          "height": 1200,
+          "position": 1
+        },
+        {
+          "id": 1003,
+          "url": "https://cdn.example.com/products/bed-sheet-room.jpg",
+          "thumbnail": "https://cdn.example.com/products/bed-sheet-room-thumb.jpg",
+          "alt_text": "Bed sheet in bedroom setting",
+          "width": 1200,
+          "height": 1200,
+          "position": 2
+        }
+      ],
+      "videos": [
+        {
+          "id": 2001,
+          "type": "youtube",  // youtube, vimeo, hosted
+          "url": "https://www.youtube.com/watch?v=xxxxx",
+          "thumbnail": "https://img.youtube.com/vi/xxxxx/maxresdefault.jpg",
+          "title": "Product Overview Video"
+        }
+      ]
+    },
+    
+    // ===== REVIEWS & RATINGS =====
+    "reviews": {
+      "average_rating": 4.5,
+      "rating_count": 127,
+      "review_count": 98,
+      "rating_distribution": {
+        "5_star": 65,
+        "4_star": 32,
+        "3_star": 15,
+        "2_star": 10,
+        "1_star": 5
+      },
+      "verified_purchase_percentage": 85.5,
+      "recommendation_percentage": 92.3  // % who would recommend
+    },
+    
+    // ===== SHIPPING & DELIVERY =====
+    "shipping": {
+      "weight": 1.5,
+      "weight_unit": "kg",
+      "dimensions": {
+        "length": 30,
+        "width": 25,
+        "height": 5,
+        "unit": "cm"
+      },
+      "shipping_class": "standard",
+      "free_shipping": false,
+      "ships_from": {
+        "country": "Bangladesh",
+        "city": "Dhaka"
+      },
+      "estimated_delivery": {
+        "min_days": 3,
+        "max_days": 7,
+        "express_available": true
+      }
+    },
+    
+    // ===== PRODUCT FLAGS & BADGES =====
+    "badges": {
+      "is_featured": false,
+      "is_new": true,  // product added in last 30 days
+      "is_trending": false,
+      "is_bestseller": true,
+      "is_on_sale": true,
+      "is_limited_edition": false,
+      "is_exclusive": false,
+      "is_eco_friendly": false
+    },
+    
+    // ===== SEO & META DATA =====
+    "seo": {
+      "meta_title": "Premium Cotton Bed Sheet - Single Size | Hometex",
+      "meta_description": "Buy premium single bed sheets made from 100% cotton. Soft, durable, and comfortable. Free shipping on orders over 1000৳.",
+      "meta_keywords": ["bed sheet", "cotton bed sheet", "single bed sheet", "hometex"],
+      "canonical_url": "https://example.com/products/new-bed-sheet",
+      "og_title": "Premium Cotton Bed Sheet",
+      "og_description": "High-quality bed sheet for ultimate comfort",
+      "og_image": "https://cdn.example.com/products/bed-sheet-main.jpg",
+      "twitter_card": "summary_large_image"
+    },
+    
+    // ===== RELATED PRODUCTS & RECOMMENDATIONS =====
+    "related_products": {
+      "similar_products": [101, 205, 308],  // product IDs
+      "frequently_bought_together": [56, 89, 134],
+      "customers_also_viewed": [167, 234, 291],
+      "recently_viewed": [412, 389, 276]
+    },
+    
+    // ===== ADDITIONAL INFORMATION =====
+    "warranty": {
+      "has_warranty": true,
+      "duration": 6,
+      "duration_unit": "months",
+      "type": "manufacturer",  // manufacturer, seller, extended
+      "details": "6 months warranty against manufacturing defects"
+    },
+    "return_policy": {
+      "returnable": true,
+      "return_window_days": 7,
+      "conditions": "Unused and in original packaging"
+    },
+    "minimum_order_quantity": 1,
+    "maximum_order_quantity": 50,
+    "bulk_pricing": [
+      {"min_quantity": 10, "max_quantity": 49, "price": 575.00, "discount_percentage": 5},
+      {"min_quantity": 50, "max_quantity": null, "price": 550.00, "discount_percentage": 10}
+    ],
+    
+    // ===== SUPPLIER & VENDOR =====
+    "supplier": {
+      "id": 5,
+      "name": "Hometex Bangladesh Manufactory",
+      "phone": "01978663839",
+      "email": "supplier@hometex.com",
+      "address": "Dhaka, Bangladesh"
+    },
+    "vendor": {
+      "id": 1,
+      "name": "Hometex Official Store",
+      "slug": "hometex-store",
+      "rating": 4.8,
+      "verified": true
+    },
+    
+    // ===== TIMESTAMPS & AUDIT =====
+    "created_at": "2025-02-21T15:58:00Z",
+    "updated_at": "2025-03-15T10:30:00Z",
+    "published_at": "2025-02-22T00:00:00Z",
+    "created_by": {
+      "id": 1,
+      "name": "Shahadath Hossain",
+      "role": "admin"
+    },
+    "updated_by": {
+      "id": 1,
+      "name": "Shahadath Hossain",
+      "role": "admin"
+    },
+    
+    // ===== ANALYTICS & TRACKING =====
+    "analytics": {
+      "views_count": 1245,
+      "clicks_count": 342,
+      "add_to_cart_count": 156,
+      "purchase_count": 89,
+      "conversion_rate": 7.14,  // percentage
+      "wishlist_count": 67
+    }
+  },
+  "meta": {
+    "request_id": "req_abc123xyz",
+    "timestamp": "2025-11-22T10:12:00Z",
+    "response_time_ms": 45
+  }
+}
+Product Variation Structure (for variable products)
+When has_variations: true, the variations array contains:​
+
+json
+"variations": [
+  {
+    "id": 4121,
+    "parent_id": 412,
+    "sku": "8569-RED-L",
+    "name": "New bed sheet - Red, Large",
+    "slug": "new-bed-sheet-red-large",
+    "attributes": [
+      {"name": "Color", "value": "Red"},
+      {"name": "Size", "value": "Large"}
+    ],
+    "pricing": {
+      "regular_price": 750.00,
+      "sale_price": 675.00,
+      "final_price": 675.00
+    },
+    "inventory": {
+      "stock_status": "in_stock",
+      "stock_quantity": 25
+    },
+    "media": {
+      "primary_image": {
+        "url": "https://cdn.example.com/products/bed-sheet-red-large.jpg",
+        "thumbnail": "https://cdn.example.com/products/bed-sheet-red-large-thumb.jpg"
+      }
+    },
+    "weight": 1.8,
+    "dimensions": {"length": 250, "width": 200, "height": 2}
+  }
+]
+Key Improvements Over Your Current Structure​
+1. Standardized Response Wrapper
+json
+{
+  "success": true,  // boolean for quick status check
+  "data": {},  // actual product data
+  "meta": {}  // request metadata
+}
+2. Nested Objects for Related Data
+Groups related fields logically (pricing, inventory, media, reviews)
+
+Easier to maintain and extend
+
+Better frontend consumption​
+
+3. ISO 8601 Timestamps
+Replace "Fri, Feb 21, 2025 3:58 PM" with "2025-02-21T15:58:00Z"
+
+Standard format, timezone-aware, machine-readable​
+
+4. Consistent Naming Conventions
+Use snake_case consistently
+
+Boolean fields start with is_, has_, can_​
+
+Status fields use lowercase strings: "active" not "Active"
+
+5. Price Structure
+Separate cost, regular, sale, and final prices
+
+Dedicated discount object with type and dates
+
+Support for tax calculations​
+
+6. Product Variations Support
+Handle color, size, material variants properly
+
+Each variation has own SKU, price, stock​
+
+Parent-child relationship structure
+
+7. Enhanced Media Management
+Primary image + gallery + videos
+
+Include thumbnails for performance
+
+Alt text for SEO and accessibility​
+
+8. Reviews & Ratings Object
+Aggregate statistics
+
+Rating distribution (star breakdown)
+
+Verified purchase percentage​
+
+9. SEO & Schema.org Ready
+Complete meta tags
+
+Open Graph and Twitter card data
+
+Structured data for rich snippets​
+
+10. Product Relationships
+Similar products
+
+Frequently bought together
+
+Cross-sell and upsell data​
+
+Separate APIs Using This Structure
+With this standardized response, you can create filtered endpoints:​
+
+Featured Products
+GET /api/v1/products?filter=featured
+
+Filters where badges.is_featured = true
+
+New Arrivals
+GET /api/v1/products?filter=new
+
+Filters where badges.is_new = true
+
+Trending Products
+GET /api/v1/products?filter=trending
+
+Filters where badges.is_trending = true
+
+On Sale Products
+GET /api/v1/products?filter=sale
+
+Filters where badges.is_on_sale = true
+
+Similar Products
+GET /api/v1/products/{id}/similar
+
+Uses related_products.similar_products IDs
+
+Based on same category, brand, or tags
+
+You May Also Like
+GET /api/v1/products/{id}/recommendations
+
+Uses related_products.customers_also_viewed
+
+Machine learning recommendations
+
+Bestsellers
+GET /api/v1/products?sort=bestselling
+
+Sorts by analytics.purchase_count
+
+Database Optimization Tips​
+Index Strategy:
+
+sku, slug, status, category_id
+
+is_featured, is_new, is_trending for quick filtering
+
+created_at, updated_at for sorting
+
+Caching:
+
+Cache product details for 1 hour
+
+Invalidate on product update
+
+Cache category trees separately
+
+Lazy Loading:
+
+Load reviews separately: GET /api/v1/products/{id}/reviews
+
+Load variations on-demand for variable products
+
+Pagination:
+
+json
+{
+  "success": true,
+  "data": [...],
+  "pagination": {
+    "current_page": 1,
+    "per_page": 20,
+    "total": 500,
+    "total_pages": 25,
+    "has_more": true
+  }
+}

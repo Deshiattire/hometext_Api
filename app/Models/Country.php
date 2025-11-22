@@ -10,6 +10,8 @@ class Country extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    
+    protected $fillable = ['name', 'code', 'status'];
 
     public const STATUS_ACTIVE = 1;
 

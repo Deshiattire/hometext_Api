@@ -10,7 +10,7 @@ class ProductPhoto extends Model
     use HasFactory;
 
 
-    protected $fillable = ['product_id', 'photo', 'is_primary'];
+    protected $fillable = ['product_id', 'photo', 'is_primary', 'alt_text', 'width', 'height', 'position'];
 
     public const PHOTO_UPLOAD_PATH = 'images/uploads/product/';
     public const PHOTO_WIDTH  = 800;
