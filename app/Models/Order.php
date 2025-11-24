@@ -36,7 +36,11 @@ class Order extends Model
                 ]
         );
         if(!$is_admin){
-            $query->where('shop_id', $auth->user()->shop_id);
+            $user = $auth->user();
+            $shopId = $user instanceof \App\Models\User ? $user->shop_id : $user->shop_id;
+            if($shopId) {
+                $query->where('shop_id', $shopId);
+            }
         }
         return $query->paginate(10);
     }
@@ -73,10 +77,11 @@ class Order extends Model
         return $price;
        }else{
 
+           $shopId = $auth instanceof \App\Models\User ? $auth->shop_id : $auth->shop_id;
            $order_data = [
                'customer_id' =>$input['orderSummary']['customer_id'],
                'sales_manager_id'=> $auth->id,
-               'shop_id' => $auth->shop_id,
+               'shop_id' => $shopId,
                'sub_total' => $price['sub_total'],
                'discount' => $price['discount'],
                'total' => $price['total'],
@@ -84,7 +89,7 @@ class Order extends Model
                'paid_amount' =>$input['orderSummary']['paid_amount'],
                'due_amount' =>$input['orderSummary']['due_amount'],
                'order_status' => self::STATUS_COMPLETED,
-               'order_number' => OrderManager::generateOrderNumber($auth->shop_id),
+               'order_number' => OrderManager::generateOrderNumber($shopId),
                'payment_method_id'=> $input['orderSummary']['payment_method_id'],
                'payment_status'=> OrderManager::decidePaymentStatus($price['total'], $input['orderSummary']['paid_amount']),
                'shipment_status' => self::SHIPMENT_STATUS_COMPLETED,

@@ -119,11 +119,30 @@ class CheckOutController extends Controller
             $user = new User();
             $user->password = Hash::make($request->password);
             $user->email =  $request->username;
-            $user->name =  $request->pd_first_name;
+            $user->first_name =  $request->pd_first_name;
+            $user->last_name = $request->pd_last_name ?? null;
             $user->phone =  $request->pd_phone;
-            $user->shop_id = 4;
-            $user->salt = rand(1111, 9999);
+            $user->user_type = 'customer';
+            $user->status = 'active';
             $user->save();
+            
+            // Assign customer role
+            if (method_exists($user, 'assignRole')) {
+                $user->assignRole('customer');
+            }
+            
+            // Add shop access if needed (shop_id = 4)
+            if ($user->id) {
+                \DB::table('user_shop_access')->insert([
+                    'user_id' => $user->id,
+                    'shop_id' => 4,
+                    'role' => 'customer',
+                    'is_primary' => true,
+                    'granted_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             $token = Auth::attempt(['email' => $request->username, 'password' => $request->password]);
 
@@ -141,7 +160,7 @@ class CheckOutController extends Controller
                 $new_order = new Order();
                 $new_order->customer_id = $customer->id;
                 $new_order->payment_method_id = $request->payment_method;
-                $new_order->shop_id = 4;
+                $new_order->shop_id = 4; // TODO: Get from user's shop access or make configurable
                 $new_order->sales_manager_id = 2;
                 $new_order->order_number = 'HTB' . date('ymdHis') . $user->id;
                 $new_order->sub_total = $request->total_payable_amount;
