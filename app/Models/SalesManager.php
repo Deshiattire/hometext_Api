@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class SalesManager extends Model
 {
-    use HasFactory, HasApiTokens, Notifiable;
+    use HasFactory, HasApiTokens, Notifiable, HasRoles;
     protected  $hidden = [
         'password',
     ];

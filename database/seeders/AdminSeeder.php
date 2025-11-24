@@ -16,12 +16,19 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
 
-      \App\Models\User::factory()->create([
-         'name' => 'Admin',
+      $admin = User::create([
+         'first_name' => 'Admin',
+         'last_name' => 'User',
         'email' => 'admin@hometexbd.ltd',
         'phone' => '01616101090',
         'password' => Hash::make('12345678'),
-        'role_id' => 1,
+        'user_type' => 'admin',
+        'status' => 'active',
         ]);
+        
+      // Assign admin role using Spatie Permission
+      if (method_exists($admin, 'assignRole')) {
+          $admin->assignRole('admin');
+      }
     }
 }

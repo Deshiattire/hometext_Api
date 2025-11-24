@@ -212,12 +212,16 @@ Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
 Route::get('my-order', [OrderDetailsController::class, 'myorder']);
 
 
-//==============Routes for User [Working]==============
-Route::post('user-registration', [EcomUserController::class, 'registration']);
-Route::post('user-login', [EcomUserController::class, 'UserLogin']);
-// Route::post('user-signup', [EcomUserController::class, 'signup']);
-Route::get('my-profile', [EcomUserController::class, 'myprofile']);
-Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+//==============Routes for Customer (Public - No Auth Required)==============
+Route::post('customer-signup', [EcomUserController::class, 'registration']);
+Route::post('customer-login', [EcomUserController::class, 'UserLogin']);
+
+//==============Routes for Customer (Protected - Auth Required)==============
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('my-profile', [EcomUserController::class, 'myprofile']);
+    Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
+    Route::post('customer-logout', [EcomUserController::class, 'logout']);
+});
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 
 //==============Routes for Wishlist [Working]==============

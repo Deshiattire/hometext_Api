@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Shop extends Model
@@ -114,5 +115,14 @@ class Shop extends Model
         return $this->belongsToMany(Product::class, 'shop_product')
             ->withPivot('quantity')
             ->using(ShopProduct::class);
+    }
+
+    // Define the users relationship through user_shop_access
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_shop_access', 'shop_id', 'user_id')
+            ->wherePivotNull('revoked_at')
+            ->withPivot('role', 'is_primary', 'granted_at', 'revoked_at')
+            ->withTimestamps();
     }
 }
