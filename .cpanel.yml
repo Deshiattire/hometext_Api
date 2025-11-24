@@ -1,0 +1,47 @@
+deployment:
+  tasks:
+    - export DEPLOY_PATH="/home/hometex1/public_html"
+    - echo "Starting deploy"
+
+    - mkdir -p "$DEPLOY_PATH"
+
+    - rsync -av --delete --exclude='.git' --exclude='.env' ./ "$DEPLOY_PATH/"
+
+    - cd "$DEPLOY_PATH"
+
+    - |
+      if command -v composer >/dev/null 2>&1; then
+        echo "Using system composer"
+        composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader || true
+      elif [ -f ./composer.phar ]; then
+        echo "Using local composer.phar"
+        php composer.phar install --no-dev --prefer-dist --no-interaction --optimize-autoloader || true
+      else
+        echo "Composer not found"
+      fi
+
+    - |
+      if command -v npm >/dev/null 2>&1; then
+        if [ -f package.json ]; then
+          npm ci || npm install
+          npm run build || npm run production || true
+        fi
+      else
+        echo "npm not available"
+      fi
+
+    - |
+      if [ -f artisan ]; then
+        php artisan config:clear || true
+        php artisan cache:clear || true
+        php artisan route:clear || true
+        php artisan view:clear || true
+        php artisan config:cache || true
+      fi
+
+    - |
+      if [ -d storage ]; then
+        chmod -R ug+rw storage bootstrap/cache || true
+      fi
+
+    - echo "Deploy finished"
