@@ -118,7 +118,7 @@ class ProductService
             
             // Related products
             'relatedProducts:id,product_id,related_product_id,relation_type,sort_order',
-            'relatedProducts.relatedProduct:id,name,slug,price,primary_photo',
+            'relatedProducts.relatedProduct:id,name,slug,price',
             'relatedProducts.relatedProduct.primary_photo:id,photo,product_id,is_primary',
             
             // SEO
@@ -180,7 +180,7 @@ class ProductService
             
             // Related products
             'relatedProducts:id,product_id,related_product_id,relation_type,sort_order',
-            'relatedProducts.relatedProduct:id,name,slug,price,primary_photo',
+            'relatedProducts.relatedProduct:id,name,slug,price',
             'relatedProducts.relatedProduct.primary_photo:id,photo,product_id,is_primary',
             
             // SEO
