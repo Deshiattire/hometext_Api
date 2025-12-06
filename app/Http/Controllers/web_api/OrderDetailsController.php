@@ -25,29 +25,42 @@ class OrderDetailsController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['checkout', 'myorder']]);
+        $this->middleware('auth:api', ['except' => ['checkout']]);
     }
 
 
     public function myorder()
     {
-        if (Auth::check()) {
-            $customer = Customer::where('user_id', '=',Auth::user()->id)->firstOrFail();
-            $order = [];
-            if($customer){
-                $order = Order::where('customer_id', '=',$customer->id )->get();
+        // Check if user is authenticated with Sanctum
+        if (Auth::guard('sanctum')->check()) {
+            $user = Auth::guard('sanctum')->user();
+            
+            // Try to find customer by user_id
+            $customer = Customer::where('user_id', '=', $user->id)->first();
+            
+            if (!$customer) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Customer profile not found for this user',
+                    'user' => $user,
+                ], 404);
             }
+            
+            // Get all orders for this customer
+            $order = Order::where('customer_id', '=', $customer->id)->get();
+            
             return response()->json([
                 'status' => 'success',
-                'user' => Auth::user(),
-                'customer' =>$customer,
-                'order' =>$order,
+                'user' => $user,
+                'customer' => $customer,
+                'order' => $order,
             ], 200);
         } else {
             return response()->json([
                 'status' => 'error',
+                'message' => 'User not authenticated',
                 'user' => [],
-            ], 200);
+            ], 401);
         }
     }
 }
