@@ -27,6 +27,7 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SubCategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\web_api\CheckOutController;
+use App\Http\Controllers\web_api\CategoryApiController;
 use App\Http\Controllers\web_api\EcomUserController;
 use App\Http\Controllers\web_api\OrderDetailsController;
 use App\Http\Controllers\web_api\PaymentController;
@@ -54,8 +55,21 @@ Route::post('/save-csv', [CsvController::class, 'saveCsv']);
 // Route::get('test', [scriptManager::class, 'getCountry']);
 Route::post('login', [AuthController::class, 'login'])->name('login');
 
-//==============Routes for Product [Working]==============
+//==============Routes for Categories/Menu [Working]==============
+// Public category API endpoints (v1 structure)
+// Note: More specific routes must come before less specific ones
+Route::prefix('v1/categories')->group(function () {
+    Route::get('/tree', [CategoryApiController::class, 'tree']); // Complete menu tree
+    Route::get('/slug/{slug}', [CategoryApiController::class, 'showBySlug']); // Category by slug (must come before {id} routes)
+    Route::get('/{id}/children', [CategoryApiController::class, 'children']); // Category children
+    Route::get('/{id}/breadcrumb', [CategoryApiController::class, 'breadcrumb']); // Breadcrumb path
+    Route::get('/', [CategoryApiController::class, 'index']); // Root categories only (must be last)
+});
+
+// Legacy menu route (keeping for backward compatibility)
 Route::get('product/menu', [ProductController::class, 'ProductMenu']);
+
+//==============Routes for Product [Working]==============
 Route::get('products', [ProductController::class, 'index']);
 
 // Product filter endpoints (optimized with caching) - Must come before {id} route
@@ -208,10 +222,6 @@ Route::post('payment-success', [PaymentController::class, 'paymentsuccess']);
 Route::get('payment-cancel', [PaymentController::class, 'paymentcancel']);
 Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
 
-//==============Routes for Order Details [Working]==============
-Route::get('my-order', [OrderDetailsController::class, 'myorder']);
-
-
 //==============Routes for Customer (Public - No Auth Required)==============
 Route::post('customer-signup', [EcomUserController::class, 'registration']);
 Route::post('customer-login', [EcomUserController::class, 'UserLogin']);
@@ -221,6 +231,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);
     Route::post('my-profile-update', [EcomUserController::class, 'updateprofile']);
     Route::post('customer-logout', [EcomUserController::class, 'logout']);
+    
+    // Order Details - requires authentication
+    Route::get('my-order', [OrderDetailsController::class, 'myorder']);
 });
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 
