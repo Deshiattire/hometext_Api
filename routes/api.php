@@ -205,6 +205,12 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
 
 Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
 
+//==============Routes for Orders [Working]==============
+Route::post('orders', [OrderController::class, 'createOrder']);
+Route::get('orders/customer/{customer_id}', [OrderController::class, 'getOrdersByCustomer']);
+Route::get('orders/tracking', [OrderController::class, 'getTrackingStatus']);
+Route::get('orders/invoice/{invoiceId}', [OrderController::class, 'getOrderByInvoice']);
+
 //==============Routes for Checkout [Working]==============
 Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);

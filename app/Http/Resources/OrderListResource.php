@@ -40,6 +40,8 @@ class OrderListResource extends JsonResource
             'quantity'=>$this->quantity,
             'sub_total'=>$this->sub_total,
             'total'=>$this->total,
+            'consignment_id'=>$this->consignment_id,
+            'tracking_code'=>$this->tracking_code,
         ];
     }
 }
