@@ -207,9 +207,9 @@ Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::clas
 
 //==============Routes for Orders [Working]==============
 Route::post('orders', [OrderController::class, 'createOrder']);
+Route::get('orders/invoice/{invoiceId}', [OrderController::class, 'getOrderByInvoice'])->where('invoiceId', '.*');
 Route::get('orders/customer/{customer_id}', [OrderController::class, 'getOrdersByCustomer']);
 Route::get('orders/tracking', [OrderController::class, 'getTrackingStatus']);
-Route::get('orders/invoice/{invoiceId}', [OrderController::class, 'getOrderByInvoice']);
 
 //==============Routes for Checkout [Working]==============
 Route::post('check-out', [CheckOutController::class, 'checkout']);

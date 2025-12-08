@@ -18,7 +18,7 @@ class TransactionListResource extends JsonResource
         return [
             'id'=>$this->id,
             'amount'=>$this->amount,
-            'created_at' => $this->created_at->toDayDateTimeString(),
+            'created_at' => $this->created_at ? $this->created_at->toDayDateTimeString() : '',
             'customer_name' => $this->customer?->name,
             'customer_phone' => $this->customer?->phone,
             'payment_method_name' => $this->payment_method?->name,

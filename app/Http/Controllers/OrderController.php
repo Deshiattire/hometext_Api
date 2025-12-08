@@ -532,7 +532,7 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            $order = Order::where('order_number', $orderNumber)
+            $order = Order::where('order_number', $invoiceId)
                 ->with([
                     'customer:id,name,phone,email',
                     'payment_method:id,name',
@@ -552,7 +552,7 @@ class OrderController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Order not found with the provided invoice ID or order number',
-                    'invoice_id' => $orderNumber,
+                    'invoice_id' => $invoiceId,
                 ], 404);
             }
 
