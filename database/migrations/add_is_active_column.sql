@@ -33,3 +33,4 @@ WHERE is_active IS NULL;
 -- Add index on is_active for better query performance
 CREATE INDEX IF NOT EXISTS categories_is_active_index ON categories(is_active);
 
+
