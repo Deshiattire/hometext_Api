@@ -362,13 +362,30 @@ class OrderController extends Controller
 
             $recipientData = $request->input('recipient', []);
             
-            $recipientName = $recipientData['name'] ?? $customer->name;
+            $recipientName = $recipientData['name'] 
+                ?? $shippingAddress['name'] 
+                ?? $request->input('shipping_address.name')
+                ?? $customer->name;
             $recipientName = substr($recipientName, 0, 100);
 
-            $recipientPhone = $recipientData['phone'] ?? $customer->phone ?? '01234567890';
+            $recipientPhone = $recipientData['phone'] 
+                ?? $shippingAddress['phone'] 
+                ?? $request->input('shipping_address.phone')
+                ?? $customer->phone ?? '01234567890';
             $recipientPhone = preg_replace('/[^0-9]/', '', $recipientPhone);
             if (strlen($recipientPhone) != 11) {
                 $recipientPhone = '01234567890';
+            }
+
+            $alternativePhone = null;
+            if (isset($recipientData['alternative_phone']) && !empty($recipientData['alternative_phone'])) {
+                $alternativePhone = preg_replace('/[^0-9]/', '', $recipientData['alternative_phone']);
+                if (strlen($alternativePhone) != 11) {
+                    $alternativePhone = null;
+                }
+            }
+            if (!$alternativePhone) {
+                $alternativePhone = $recipientPhone;
             }
 
             $recipientAddress = $recipientData['address'] ?? null;
@@ -387,36 +404,61 @@ class OrderController extends Controller
             }
 
             $recipientEmail = null;
-            if (isset($recipientData['email']) && filter_var($recipientData['email'], FILTER_VALIDATE_EMAIL)) {
-                $recipientEmail = $recipientData['email'];
-            } else {
+            $emailCandidates = [
+                $recipientData['email'] ?? null,
+                $shippingAddress['email'] ?? null,
+                $request->input('shipping_address.email'),
+            ];
+            
+            foreach ($emailCandidates as $email) {
+                if ($email && is_string($email)) {
+                    $email = trim($email);
+                    if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $recipientEmail = $email;
+                        break;
+                    }
+                }
+            }
+            
+            if (!$recipientEmail) {
                 if ($customer->user_id) {
                     $user = \App\Models\User::find($customer->user_id);
-                    if ($user && $user->email && filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
-                        $recipientEmail = $user->email;
+                    if ($user && $user->email) {
+                        $userEmail = trim($user->email);
+                        if (!empty($userEmail) && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+                            $recipientEmail = $userEmail;
+                        }
                     }
                 }
                 
-                if (!$recipientEmail && $customer->email && filter_var($customer->email, FILTER_VALIDATE_EMAIL)) {
-                    $recipientEmail = $customer->email;
+                if (!$recipientEmail && $customer->email) {
+                    $customerEmail = trim($customer->email);
+                    if (!empty($customerEmail) && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+                        $recipientEmail = $customerEmail;
+                    }
                 }
+            }
+
+            $deliveryType = (int) $request->input('delivery_type', 0);
+            if (!in_array($deliveryType, [0, 1])) {
+                $deliveryType = 0;
             }
 
             $steadfastOrderData = [
                 'invoice' => $order->order_number,
                 'recipient_name' => $recipientName,
                 'recipient_phone' => $recipientPhone,
-                'alternative_phone' => $recipientPhone,
+                'alternative_phone' => $alternativePhone,
                 'recipient_address' => $recipientAddress,
                 'cod_amount' => $total,
                 'note' => isset($additionalDetails['notes']) ? substr($additionalDetails['notes'], 0, 500) : null,
                 'item_description' => substr($itemDescriptions, 0, 500),
                 'total_lot' => $quantity,
-                'delivery_type' => 0,
+                'delivery_type' => $deliveryType,
             ];
 
-            if ($recipientEmail) {
-                $steadfastOrderData['recipient_email'] = $recipientEmail;
+            if ($recipientEmail && !empty(trim($recipientEmail)) && filter_var(trim($recipientEmail), FILTER_VALIDATE_EMAIL)) {
+                $steadfastOrderData['recipient_email'] = trim($recipientEmail);
             }
 
             $steadfastResult = $steadfastService->createOrder($steadfastOrderData);
