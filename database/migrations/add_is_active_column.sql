@@ -34,3 +34,5 @@ WHERE is_active IS NULL;
 CREATE INDEX IF NOT EXISTS categories_is_active_index ON categories(is_active);
 
 
+
+

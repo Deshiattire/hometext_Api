@@ -59,7 +59,11 @@ class OrderController extends Controller
 
             $customerId = (int) $customerId;
 
-            $customer = Customer::find($customerId);
+            // Accept either the customer table primary key or the linked user_id
+            $customer = Customer::query()
+                ->where('id', $customerId)
+                ->orWhere('user_id', $customerId)
+                ->first();
             if (!$customer) {
                 return response()->json([
                     'success' => false,
@@ -68,7 +72,7 @@ class OrderController extends Controller
                 ], 404);
             }
             
-            $orders = Order::where('customer_id', $customerId)
+            $orders = Order::where('customer_id', $customer->id)
                 ->with([
                     'customer:id,name,phone,email',
                     'payment_method:id,name',
