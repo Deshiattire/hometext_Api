@@ -26,7 +26,7 @@ class ShopListResource extends JsonResource
             'status'=>$this->status == Shop::STATUS_ACTIVE ? Shop::STATUS_ACTIVE_TEXT: Shop::STATUS_INACTIVE_TEXT,
             'logo'=>ImageUploadManager::prepareImageUrl('',''),
             'logo_full'=>ImageUploadManager::prepareImageUrl('',''),
-            'created_at' => $this->created_at->toDayDateTimeString(),
+            'created_at' => $this->created_at ? $this->created_at->toDayDateTimeString() : '',
             // 'updated_at' => $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString() : 'Not updated yet',
             'address' => new AddressListResource($this->address),
             ];

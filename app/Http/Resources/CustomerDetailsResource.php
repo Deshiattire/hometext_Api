@@ -19,8 +19,8 @@ class CustomerDetailsResource extends JsonResource
             'name'=>$this->name,
             'email'=>$this->email,
             'phone'=>$this->phone,
-            'created_at'=>$this->created_at->toDayDateTimeString(),
-            'updated_at'=> $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString(): 'Not Updated',
+            'created_at'=>$this->created_at ? $this->created_at->toDayDateTimeString() : '',
+            'updated_at'=> ($this->created_at && $this->updated_at && $this->created_at != $this->updated_at) ? $this->updated_at->toDayDateTimeString(): 'Not Updated',
         ];
     }
 }
