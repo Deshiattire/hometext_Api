@@ -55,7 +55,9 @@ class CreateOrderRequest extends FormRequest
             'recipient.name' => 'nullable|string|max:100',
             'recipient.email' => 'nullable|email|max:255',
             'recipient.phone' => 'nullable|string|max:20',
+            'recipient.alternative_phone' => 'nullable|string|max:20',
             'recipient.address' => 'nullable|string|max:500',
+            'delivery_type' => 'nullable|numeric|in:0,1',
         ];
     }
 }
