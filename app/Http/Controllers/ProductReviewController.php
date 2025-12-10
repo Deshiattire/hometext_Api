@@ -95,6 +95,20 @@ class ProductReviewController extends Controller
                 $data['user_id'] = auth()->id();
             }
 
+            // If user_id is provided but reviewer_name/email are missing, fetch from user
+            if (isset($data['user_id']) && (empty($data['reviewer_name'] ?? null) || empty($data['reviewer_email'] ?? null))) {
+                $user = \App\Models\User::find($data['user_id']);
+                if ($user) {
+                    if (empty($data['reviewer_name'] ?? null)) {
+                        $fullName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+                        $data['reviewer_name'] = !empty($fullName) ? $fullName : ($user->email ?? 'User');
+                    }
+                    if (empty($data['reviewer_email'] ?? null)) {
+                        $data['reviewer_email'] = $user->email;
+                    }
+                }
+            }
+
             $review = $reviewService->createReview($data);
 
             return $this->success(
