@@ -15,6 +15,17 @@ class StoreProductReviewRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Map 'comment' to 'review' if 'comment' is provided
+        if ($this->has('comment') && !$this->has('review')) {
+            $this->merge(['review' => $this->input('comment')]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -28,6 +39,7 @@ class StoreProductReviewRequest extends FormRequest
             'rating' => 'required|integer|min:1|max:5',
             'title' => 'nullable|string|max:255',
             'review' => 'nullable|string|max:5000',
+            'comment' => 'nullable|string|max:5000', // Alias for review
             'is_verified_purchase' => 'sometimes|boolean',
             'is_recommended' => 'sometimes|boolean',
         ];
