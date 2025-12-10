@@ -15,22 +15,53 @@ class StoreProductReviewRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Map 'comment' to 'review' if 'comment' is provided
+        if ($this->has('comment') && !$this->has('review')) {
+            $this->merge(['review' => $this->input('comment')]);
+        }
+
+        // Round decimal rating to integer
+        if ($this->has('rating') && is_numeric($this->input('rating'))) {
+            $rating = (float) $this->input('rating');
+            $rounded = (int) round($rating);
+            // Clamp between 1 and 5
+            $rounded = max(1, min(5, $rounded));
+            $this->merge(['rating' => $rounded]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'product_id' => 'required|integer|exists:products,id',
-            'reviewer_name' => 'required|string|max:255',
-            'reviewer_email' => 'required|email|max:255',
-            'rating' => 'required|integer|min:1|max:5',
+            'user_id' => 'nullable|integer|exists:users,id',
+            'rating' => 'required|numeric|min:1|max:5',
             'title' => 'nullable|string|max:255',
             'review' => 'nullable|string|max:5000',
+            'comment' => 'nullable|string|max:5000', // Alias for review
             'is_verified_purchase' => 'sometimes|boolean',
             'is_recommended' => 'sometimes|boolean',
         ];
+
+        // reviewer_name and reviewer_email are required only if user_id is not provided
+        if (!$this->has('user_id')) {
+            $rules['reviewer_name'] = 'required|string|max:255';
+            $rules['reviewer_email'] = 'required|email|max:255';
+        } else {
+            $rules['reviewer_name'] = 'nullable|string|max:255';
+            $rules['reviewer_email'] = 'nullable|email|max:255';
+        }
+
+        return $rules;
     }
 
     /**
