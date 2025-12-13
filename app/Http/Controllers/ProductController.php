@@ -45,15 +45,41 @@ class ProductController extends Controller
             
             $filters = [
                 'search' => $request->validated()['search'] ?? null,
+                
+                // Category filters
                 'category_id' => $request->validated()['category_id'] ?? null,
+                'sub_category_id' => $request->validated()['sub_category_id'] ?? null,
+                'child_sub_category_id' => $request->validated()['child_sub_category_id'] ?? null,
+                
+                // Brand filter
                 'brand_id' => $request->validated()['brand_id'] ?? null,
+                
+                // Status filter
                 'status' => $request->validated()['status'] ?? null,
+                
+                // Price range filters
+                'min_price' => $request->validated()['min_price'] ?? null,
+                'max_price' => $request->validated()['max_price'] ?? null,
+                
+                // Attribute filters
+                'color' => $request->validated()['color'] ?? null,
+                'attribute_id' => $request->validated()['attribute_id'] ?? null,
+                'attribute_value_id' => $request->validated()['attribute_value_id'] ?? null,
+                'attribute_value_ids' => $request->validated()['attribute_value_ids'] ?? null,
+                
+                // Stock filters
+                'in_stock' => $request->validated()['in_stock'] ?? null,
+                'stock_status' => $request->validated()['stock_status'] ?? null,
+                
+                // Sorting
                 'order_by' => $request->validated()['order_by'] ?? 'created_at',
                 'direction' => $request->validated()['direction'] ?? 'desc',
             ];
 
-            // Remove null values from filters
-            $filters = array_filter($filters, fn($value) => $value !== null);
+            // Remove null values from filters (but keep false values for boolean filters)
+            $filters = array_filter($filters, function($value) {
+                return $value !== null && $value !== '';
+            });
 
             $products = $productService->getPaginatedProducts($filters, $perPage);
 
