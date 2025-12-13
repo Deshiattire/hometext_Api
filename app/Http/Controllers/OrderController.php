@@ -276,88 +276,12 @@ class OrderController extends Controller
             $shopId = 4;
             $salesManagerId = 2;
 
-            $order = Order::create([
-                'customer_id' => $customerId,
-                'sales_manager_id' => $salesManagerId,
-                'shop_id' => $shopId,
-                'sub_total' => $subTotal,
-                'discount' => $discount,
-                'total' => $total,
-                'quantity' => $quantity,
-                'paid_amount' => $total,
-                'due_amount' => 0,
-                'order_status' => Order::STATUS_PENDING,
-                'order_number' => OrderManager::generateOrderNumber($shopId),
-                'payment_method_id' => $paymentMethodModel->id,
-                'payment_status' => Order::PAID,
-                'shipment_status' => Order::SHIPMENT_STATUS_COMPLETED,
-            ]);
-
-            foreach ($orderDetailsData as $product) {
-                OrderDetails::create([
-                    'order_id' => $order->id,
-                    'name' => $product->name,
-                    'brand_id' => $product->brand_id,
-                    'category_id' => $product->category_id,
-                    'cost' => $product->cost,
-                    'discount_end' => $product->discount_end,
-                    'discount_fixed' => $product->discount_fixed,
-                    'discount_percent' => $product->discount_percent,
-                    'discount_start' => $product->discount_start,
-                    'price' => $product->price,
-                    'sale_price' => PriceManager::calculate_sell_price(
-                        $product->price,
-                        $product->discount_percent,
-                        $product->discount_fixed,
-                        $product->discount_start,
-                        $product->discount_end
-                    )['price'],
-                    'sku' => $product->sku,
-                    'sub_category_id' => $product->sub_category_id,
-                    'child_sub_category_id' => $product->child_sub_category_id,
-                    'supplier_id' => $product->supplier_id,
-                    'quantity' => $product->quantity,
-                    'photo' => $product->primary_photo?->photo,
-                ]);
-            }
-
-            if ($customer->user_id) {
-                $shippingAddressString = json_encode($shippingAddress);
-                $billingAddressString = json_encode($billingAddress);
-
-                UserAddress::create([
-                    'user_id' => $customer->user_id,
-                    'address_type' => 'shipping',
-                    'address_line_1' => $shippingAddress['street'],
-                    'city' => $shippingAddress['city'],
-                    'state' => $shippingAddress['state'] ?? null,
-                    'postal_code' => $shippingAddress['postalCode'],
-                    'country_code' => $this->getCountryCode($shippingAddress['country']),
-                    'full_name' => $customer->name,
-                    'phone' => $customer->phone ?? '',
-                ]);
-
-                if ($shippingAddressString !== $billingAddressString) {
-                    UserAddress::create([
-                        'user_id' => $customer->user_id,
-                        'address_type' => 'billing',
-                        'address_line_1' => $billingAddress['street'],
-                        'city' => $billingAddress['city'],
-                        'state' => $billingAddress['state'] ?? null,
-                        'postal_code' => $billingAddress['postalCode'],
-                        'country_code' => $this->getCountryCode($billingAddress['country']),
-                        'full_name' => $customer->name,
-                        'phone' => $customer->phone ?? '',
-                    ]);
-                }
-            }
-
-            DB::commit();
+            $orderNumber = OrderManager::generateOrderNumber($shopId);
 
             $steadfastService = new SteadfastService();
             
-            $itemDescriptions = $order->order_details->map(function ($detail) {
-                return $detail->name . ' (Qty: ' . $detail->quantity . ')';
+            $itemDescriptions = collect($orderDetailsData)->map(function ($product) {
+                return $product->name . ' (Qty: ' . $product->quantity . ')';
             })->implode(', ');
 
             $recipientData = $request->input('recipient', []);
@@ -445,7 +369,7 @@ class OrderController extends Controller
             }
 
             $steadfastOrderData = [
-                'invoice' => $order->order_number,
+                'invoice' => $orderNumber,
                 'recipient_name' => $recipientName,
                 'recipient_phone' => $recipientPhone,
                 'alternative_phone' => $alternativePhone,
@@ -464,26 +388,98 @@ class OrderController extends Controller
             $steadfastResult = $steadfastService->createOrder($steadfastOrderData);
 
             if (!$steadfastResult['success']) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Order created but Steadfast integration failed',
+                    'message' => 'Order creation failed: Steadfast integration failed',
                     'error' => $steadfastResult['error'],
                     'steadfast_status_code' => $steadfastResult['status_code'] ?? null,
-                    'order' => [
-                        'id' => $order->id,
-                        'orderNumber' => $order->order_number,
-                    ],
                 ], 500);
             }
 
             $steadfastConsignment = $steadfastResult['data'];
-            
-            if ($steadfastConsignment && isset($steadfastConsignment['consignment_id'])) {
-                $order->update([
-                    'consignment_id' => $steadfastConsignment['consignment_id'],
-                    'tracking_code' => $steadfastConsignment['tracking_code'] ?? null,
+            $consignmentId = $steadfastConsignment['consignment_id'] ?? null;
+            $trackingCode = $steadfastConsignment['tracking_code'] ?? null;
+
+            $order = Order::create([
+                'customer_id' => $customerId,
+                'sales_manager_id' => $salesManagerId,
+                'shop_id' => $shopId,
+                'sub_total' => $subTotal,
+                'discount' => $discount,
+                'total' => $total,
+                'quantity' => $quantity,
+                'paid_amount' => $total,
+                'due_amount' => 0,
+                'order_status' => Order::STATUS_PENDING,
+                'order_number' => $orderNumber,
+                'payment_method_id' => $paymentMethodModel->id,
+                'payment_status' => Order::PAID,
+                'shipment_status' => Order::SHIPMENT_STATUS_COMPLETED,
+                'consignment_id' => $consignmentId,
+                'tracking_code' => $trackingCode,
+            ]);
+
+            foreach ($orderDetailsData as $product) {
+                OrderDetails::create([
+                    'order_id' => $order->id,
+                    'name' => $product->name,
+                    'brand_id' => $product->brand_id,
+                    'category_id' => $product->category_id,
+                    'cost' => $product->cost,
+                    'discount_end' => $product->discount_end,
+                    'discount_fixed' => $product->discount_fixed,
+                    'discount_percent' => $product->discount_percent,
+                    'discount_start' => $product->discount_start,
+                    'price' => $product->price,
+                    'sale_price' => PriceManager::calculate_sell_price(
+                        $product->price,
+                        $product->discount_percent,
+                        $product->discount_fixed,
+                        $product->discount_start,
+                        $product->discount_end
+                    )['price'],
+                    'sku' => $product->sku,
+                    'sub_category_id' => $product->sub_category_id,
+                    'child_sub_category_id' => $product->child_sub_category_id,
+                    'supplier_id' => $product->supplier_id,
+                    'quantity' => $product->quantity,
+                    'photo' => $product->primary_photo?->photo,
                 ]);
             }
+
+            if ($customer->user_id) {
+                $shippingAddressString = json_encode($shippingAddress);
+                $billingAddressString = json_encode($billingAddress);
+
+                UserAddress::create([
+                    'user_id' => $customer->user_id,
+                    'address_type' => 'shipping',
+                    'address_line_1' => $shippingAddress['street'],
+                    'city' => $shippingAddress['city'],
+                    'state' => $shippingAddress['state'] ?? null,
+                    'postal_code' => $shippingAddress['postalCode'],
+                    'country_code' => $this->getCountryCode($shippingAddress['country']),
+                    'full_name' => $customer->name,
+                    'phone' => $customer->phone ?? '',
+                ]);
+
+                if ($shippingAddressString !== $billingAddressString) {
+                    UserAddress::create([
+                        'user_id' => $customer->user_id,
+                        'address_type' => 'billing',
+                        'address_line_1' => $billingAddress['street'],
+                        'city' => $billingAddress['city'],
+                        'state' => $billingAddress['state'] ?? null,
+                        'postal_code' => $billingAddress['postalCode'],
+                        'country_code' => $this->getCountryCode($billingAddress['country']),
+                        'full_name' => $customer->name,
+                        'phone' => $customer->phone ?? '',
+                    ]);
+                }
+            }
+
+            DB::commit();
 
             $order->load(['customer', 'payment_method', 'order_details']);
 
