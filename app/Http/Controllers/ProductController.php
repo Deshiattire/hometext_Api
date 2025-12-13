@@ -43,13 +43,17 @@ class ProductController extends Controller
         try {
             $perPage = $request->validated()['per_page'] ?? 20;
             
+            $validated = $request->validated();
+            
             $filters = [
-                'search' => $request->validated()['search'] ?? null,
-                'category_id' => $request->validated()['category_id'] ?? null,
-                'brand_id' => $request->validated()['brand_id'] ?? null,
-                'status' => $request->validated()['status'] ?? null,
-                'order_by' => $request->validated()['order_by'] ?? 'created_at',
-                'direction' => $request->validated()['direction'] ?? 'desc',
+                'search' => $validated['search'] ?? null,
+                'category_id' => $validated['category_id'] ?? null,
+                'sub_category_id' => $validated['sub_category_id'] ?? null,
+                'child_sub_category_id' => $validated['child_sub_category_id'] ?? null,
+                'brand_id' => $validated['brand_id'] ?? null,
+                'status' => $validated['status'] ?? null,
+                'order_by' => $validated['order_by'] ?? 'created_at',
+                'direction' => $validated['direction'] ?? 'desc',
             ];
 
             // Remove null values from filters
@@ -57,7 +61,7 @@ class ProductController extends Controller
 
             $products = $productService->getPaginatedProducts($filters, $perPage);
 
-            return $this->success([
+            $responseData = [
                 'products' => ProductListResource::collection($products),
                 'pagination' => [
                     'current_page' => $products->currentPage(),
@@ -68,7 +72,28 @@ class ProductController extends Controller
                     'to' => $products->lastItem(),
                     'has_more' => $products->hasMorePages(),
                 ]
-            ], 'Products retrieved successfully');
+            ];
+
+            // If only category_id is provided, include available sub_categories and child_sub_categories
+            if (!empty($filters['category_id']) && empty($filters['sub_category_id']) && empty($filters['child_sub_category_id'])) {
+                $responseData['available_filters'] = [
+                    'sub_categories' => $productService->getAvailableSubCategories($filters['category_id'])->map(function ($subCategory) {
+                        return [
+                            'id' => $subCategory->id,
+                            'name' => $subCategory->name,
+                        ];
+                    }),
+                    'child_sub_categories' => $productService->getAvailableChildSubCategories($filters['category_id'])->map(function ($childSubCategory) {
+                        return [
+                            'id' => $childSubCategory['id'],
+                            'name' => $childSubCategory['name'],
+                            'sub_category_id' => $childSubCategory['sub_category_id'],
+                        ];
+                    }),
+                ];
+            }
+
+            return $this->success($responseData, 'Products retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve products', $e->getMessage(), 500);
         }

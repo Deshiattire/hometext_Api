@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Category;
+use App\Models\ChildSubCategory;
 use App\Models\Product;
+use App\Models\SubCategory;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -44,9 +47,18 @@ class ProductService
             });
         }
 
-        // Apply category filter
+        // Apply hierarchical category filters
+        // Only apply filters that are explicitly provided (don't assume missing parameters)
         if (!empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
+        }
+
+        if (!empty($filters['sub_category_id'])) {
+            $query->where('sub_category_id', $filters['sub_category_id']);
+        }
+
+        if (!empty($filters['child_sub_category_id'])) {
+            $query->where('child_sub_category_id', $filters['child_sub_category_id']);
         }
 
         // Apply brand filter
@@ -417,6 +429,73 @@ class ProductService
             ->where('brand_id', $brandId)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
+    }
+
+    /**
+     * Get available sub categories for a given category_id
+     * Returns distinct sub_categories that have products in the given category
+     * 
+     * @param int $categoryId
+     * @return Collection
+     */
+    public function getAvailableSubCategories(int $categoryId): Collection
+    {
+        $subCategoryIds = Product::query()
+            ->where('category_id', $categoryId)
+            ->whereNotNull('sub_category_id')
+            ->distinct()
+            ->pluck('sub_category_id');
+
+        return SubCategory::query()
+            ->where('category_id', $categoryId)
+            ->whereIn('id', $subCategoryIds)
+            ->select('id', 'name', 'category_id')
+            ->get();
+    }
+
+    /**
+     * Get available child sub categories for a given category_id and/or sub_category_id
+     * Returns distinct child_sub_categories that have products matching the criteria
+     * 
+     * @param int|null $categoryId
+     * @param int|null $subCategoryId
+     * @return Collection
+     */
+    public function getAvailableChildSubCategories(?int $categoryId = null, ?int $subCategoryId = null): Collection
+    {
+        $productQuery = Product::query()
+            ->whereNotNull('child_sub_category_id');
+
+        if ($categoryId !== null) {
+            $productQuery->where('category_id', $categoryId);
+        }
+
+        if ($subCategoryId !== null) {
+            $productQuery->where('sub_category_id', $subCategoryId);
+        }
+
+        $childSubCategoryIds = $productQuery->distinct()->pluck('child_sub_category_id');
+
+        $query = ChildSubCategory::query()
+            ->whereIn('id', $childSubCategoryIds);
+
+        if ($subCategoryId !== null) {
+            $query->where('sub_category_id', $subCategoryId);
+        } elseif ($categoryId !== null) {
+            $query->whereHas('sub_category', function ($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
+        }
+
+        return $query->select('id', 'name', 'sub_category_id')
+            ->get()
+            ->map(function ($childSubCategory) {
+                return [
+                    'id' => $childSubCategory->id,
+                    'name' => $childSubCategory->name,
+                    'sub_category_id' => $childSubCategory->sub_category_id,
+                ];
+            });
     }
 }
 
