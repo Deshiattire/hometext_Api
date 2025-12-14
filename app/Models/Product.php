@@ -15,10 +15,61 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class Product extends Model
 {
     use HasFactory;
+    
+    /**
+     * Override getAttribute to handle missing tables gracefully
+     */
+    public function getAttribute($key)
+    {
+        // List of relationships that might have missing tables
+        $optionalRelationships = ['approvedReviews', 'videos', 'bulkPricing', 'analytics', 'relatedProducts', 'tags', 'variations', 'seo_meta'];
+        
+        // If accessing an optional relationship, check if table exists first
+        if (in_array($key, $optionalRelationships)) {
+            $tableMap = [
+                'approvedReviews' => 'product_reviews',
+                'videos' => 'product_videos',
+                'bulkPricing' => 'bulk_pricing',
+                'analytics' => 'product_analytics',
+                'relatedProducts' => 'related_products',
+                'tags' => 'product_tags',
+                'variations' => 'product_variations',
+                'seo_meta' => 'product_seo_meta_data',
+            ];
+            
+            if (isset($tableMap[$key]) && !Schema::hasTable($tableMap[$key])) {
+                // Return empty collection for HasMany relationships
+                if (in_array($key, ['approvedReviews', 'videos', 'bulkPricing', 'relatedProducts', 'tags', 'variations', 'seo_meta'])) {
+                    return new Collection([]);
+                }
+                // Return null for HasOne relationships
+                if (in_array($key, ['analytics'])) {
+                    return null;
+                }
+            }
+        }
+        
+        try {
+            return parent::getAttribute($key);
+        } catch (QueryException $e) {
+            // If error is due to missing table, return empty collection or null
+            if (str_contains($e->getMessage(), "doesn't exist") || str_contains($e->getMessage(), 'Base table or view not found')) {
+                if (in_array($key, ['approvedReviews', 'videos', 'bulkPricing', 'relatedProducts', 'tags', 'variations', 'seo_meta'])) {
+                    return new Collection([]);
+                }
+                if (in_array($key, ['analytics'])) {
+                    return null;
+                }
+            }
+            throw $e;
+        }
+    }
 
     protected $fillable = [
         'brand_id',
@@ -224,8 +275,12 @@ class Product extends Model
             'brand:id,name',
             'country:id,name',
             'supplier:id,name,phone',
-            'created_by:id,first_name,last_name',
-            'updated_by:id,first_name,last_name',
+            'created_by' => function($q) {
+                $q->select('id', 'first_name', 'last_name')->withoutGlobalScopes();
+            },
+            'updated_by' => function($q) {
+                $q->select('id', 'first_name', 'last_name')->withoutGlobalScopes();
+            },
             'primary_photo',
             'product_attributes.attributes',
             'product_attributes.attribute_value',
@@ -305,14 +360,14 @@ class Product extends Model
      */
     public function created_by():BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by_id');
+        return $this->belongsTo(User::class, 'created_by_id')->withoutGlobalScopes();
     }
     /**
      * @return BelongsTo
      */
     public function updated_by():BelongsTo
     {
-        return $this->belongsTo(User::class, 'updated_by_id');
+        return $this->belongsTo(User::class, 'updated_by_id')->withoutGlobalScopes();
     }
     /**
      * @return hasOne
@@ -352,6 +407,13 @@ class Product extends Model
      */
     public function variations(): HasMany
     {
+        if (!Schema::hasTable('product_variations')) {
+            $relation = $this->hasMany(ProductVariation::class);
+            $relation->macro('get', function() {
+                return new \Illuminate\Database\Eloquent\Collection([]);
+            });
+            return $relation;
+        }
         return $this->hasMany(ProductVariation::class);
     }
 
@@ -360,6 +422,13 @@ class Product extends Model
      */
     public function tags(): BelongsToMany
     {
+        if (!Schema::hasTable('product_tags') || !Schema::hasTable('product_tag_pivot')) {
+            $relation = $this->belongsToMany(ProductTag::class, 'product_tag_pivot', 'product_id', 'product_tag_id');
+            $relation->macro('get', function() {
+                return new \Illuminate\Database\Eloquent\Collection([]);
+            });
+            return $relation;
+        }
         return $this->belongsToMany(ProductTag::class, 'product_tag_pivot', 'product_id', 'product_tag_id');
     }
 

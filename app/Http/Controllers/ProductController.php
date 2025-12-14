@@ -56,8 +56,10 @@ class ProductController extends Controller
                 'direction' => $validated['direction'] ?? 'desc',
             ];
 
-            // Remove null values from filters
-            $filters = array_filter($filters, fn($value) => $value !== null);
+            // Remove null values from filters (but keep false values for boolean filters)
+            $filters = array_filter($filters, function($value) {
+                return $value !== null && $value !== '';
+            });
 
             $products = $productService->getPaginatedProducts($filters, $perPage);
 

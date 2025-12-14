@@ -36,7 +36,26 @@ class IndexProductRequest extends FormRequest
             'sub_category_id' => 'sometimes|nullable',
             'child_sub_category_id' => 'sometimes|nullable',
             'brand_id' => 'sometimes|integer|exists:brands,id',
+            
+            // Status filter
             'status' => ['sometimes', 'integer', Rule::in([Product::STATUS_ACTIVE, Product::STATUS_INACTIVE])],
+            
+            // Price range filters
+            'min_price' => 'sometimes|numeric|min:0',
+            'max_price' => 'sometimes|numeric|min:0|gte:min_price',
+            
+            // Attribute filters (for color, size, etc.)
+            'color' => 'sometimes|string|max:100', // Filter by color name
+            'attribute_id' => 'sometimes|integer|exists:attributes,id',
+            'attribute_value_id' => 'sometimes|integer|exists:attribute_values,id',
+            'attribute_value_ids' => 'sometimes|array', // Multiple attribute values
+            'attribute_value_ids.*' => 'integer|exists:attribute_values,id',
+            
+            // Stock filter
+            'in_stock' => 'sometimes|boolean',
+            'stock_status' => 'sometimes|string|in:in_stock,out_of_stock,on_backorder,preorder',
+            
+            // Sorting
             'order_by' => 'sometimes|string|in:id,name,price,created_at,updated_at',
             'direction' => 'sometimes|string|in:asc,desc',
         ];
