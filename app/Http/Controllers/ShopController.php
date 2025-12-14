@@ -8,8 +8,10 @@ use Illuminate\Support\Str;
 use App\Http\Requests\UpdateShopRequest;
 use App\Http\Resources\ShopEditResource;
 use App\Http\Resources\ShopListResource;
+use App\Http\Resources\ProductListResource;
 use App\Manager\ImageUploadManager;
 use App\Models\Address;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -164,5 +166,98 @@ public function destroy(Shop $shop): JsonResponse
     {
         $shops = (new Shop())->getShopListIdName();
         return response()->json($shops);
+    }
+
+    /**
+     * Get list of shops with total product count
+     *
+     * @return JsonResponse
+     */
+    public function getShops(): JsonResponse
+    {
+        try {
+            $shops = Shop::query()
+                ->select('shops.id as shop_id', 'shops.name as shop_name')
+                ->leftJoin('shop_product', 'shops.id', '=', 'shop_product.shop_id')
+                ->selectRaw('COUNT(DISTINCT shop_product.product_id) as total')
+                ->groupBy('shops.id', 'shops.name')
+                ->orderBy('shops.id')
+                ->get()
+                ->map(function ($shop) {
+                    return [
+                        'total' => (int) $shop->total,
+                        'shop_id' => $shop->shop_id,
+                        'shop_name' => $shop->shop_name,
+                    ];
+                });
+
+            return $this->success($shops, 'Shops retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve shops', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get products for a specific shop
+     *
+     * @param Request $request
+     * @param int $shop_id
+     * @return JsonResponse
+     */
+    public function getShopProducts(Request $request, int $shop_id): JsonResponse
+    {
+        try {
+            $shop = Shop::findOrFail($shop_id);
+
+            $perPage = $request->input('per_page', 20);
+            $perPage = min(max((int) $perPage, 1), 100);
+
+            $products = Product::query()
+                ->whereIn('products.id', function($query) use ($shop_id) {
+                    $query->select('product_id')
+                        ->from('shop_product')
+                        ->where('shop_id', $shop_id);
+                })
+                ->with([
+                    'category:id,name',
+                    'sub_category:id,name',
+                    'child_sub_category:id,name',
+                    'brand:id,name',
+                    'country:id,name',
+                    'supplier:id,name,phone',
+                    'created_by' => function($q) {
+                        $q->select('id', 'first_name', 'last_name')->withoutGlobalScopes();
+                    },
+                    'updated_by' => function($q) {
+                        $q->select('id', 'first_name', 'last_name')->withoutGlobalScopes();
+                    },
+                    'primary_photo',
+                    'product_attributes.attributes',
+                    'product_attributes.attribute_value',
+                    'product_specifications.specifications',
+                    'shops' => function($q) {
+                        $q->select('shops.id', 'shops.name');
+                    }
+                ])
+                ->orderBy('products.id', 'desc')
+                ->paginate($perPage);
+
+            return $this->success([
+                'products' => ProductListResource::collection($products),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'from' => $products->firstItem(),
+                    'to' => $products->lastItem(),
+                    'has_more' => $products->hasMorePages(),
+                ]
+            ], 'Products retrieved successfully');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->error('Shop not found', null, 404);
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve products', $e->getMessage(), 500);
+        }
     }
 }
