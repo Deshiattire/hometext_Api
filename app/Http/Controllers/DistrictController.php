@@ -16,7 +16,13 @@ class DistrictController extends Controller
     final public function index(int $division_id):JsonResponse
     {
         $districts = (new District())->getDistrictByDivisionId($division_id);
-        return response()->json($districts);
+        $formatted = $districts->map(function ($district) {
+            return [
+                'district_id' => $district->id,
+                'district_name' => $district->name,
+            ];
+        });
+        return response()->json($formatted);
     }
 
 

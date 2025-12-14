@@ -10,13 +10,19 @@ use App\Http\Requests\UpdateAreaRequest;
 class AreaController extends Controller
 {
     /**
-     * @param int $division_id
+     * @param int $division_key
      * @return JsonResponse
      */
-    final public function index(int $district_id):JsonResponse
+    final public function index(int $division_key):JsonResponse
     {
-        $areas = (new Area())->getAreaByDistrictId($district_id);
-        return response()->json($areas);
+        $areas = (new Area())->getAreaByDivisionId($division_key);
+        $formatted = $areas->map(function ($area) {
+            return [
+                'area_id' => $area->id,
+                'area_name' => $area->name,
+            ];
+        });
+        return response()->json($formatted);
     }
 
     /**
