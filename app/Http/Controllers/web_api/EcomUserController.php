@@ -53,7 +53,7 @@ class EcomUserController extends Controller
 
             $user->recordLogin();
             $token = $user->createToken('auth-token')->plainTextToken;
-            return response()->json(['status' => 200, 'message' => 'success', 'token' => $token], 200);
+            return response()->json(['status' => 200, 'message' => 'success', 'token' => $token, 'id' => $user->id], 200);
         } else {
             if($user) {
                 $user->recordFailedLogin();
@@ -235,6 +235,7 @@ class EcomUserController extends Controller
                 // Record login
                 $user->recordLogin();
 
+                $user_data['id'] = $user->id;
                 $user_data['token'] = $user->createToken($user->email)->plainTextToken;
                 $user_data['name'] = $user->first_name . ($user->last_name ? ' ' . $user->last_name : '');
                 $user_data['first_name'] = $user->first_name;
