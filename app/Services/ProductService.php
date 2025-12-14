@@ -209,7 +209,7 @@ class ProductService
         
         if (DB::getSchemaBuilder()->hasTable('product_tags')) {
             $with['tags'] = function($q) {
-                $q->select('id', 'name', 'slug');
+                $q->select('product_tags.id', 'product_tags.name', 'product_tags.slug');
             };
         }
         
@@ -325,7 +325,7 @@ class ProductService
         
         if (DB::getSchemaBuilder()->hasTable('product_tags')) {
             $with['tags'] = function($q) {
-                $q->select('id', 'name', 'slug');
+                $q->select('product_tags.id', 'product_tags.name', 'product_tags.slug');
             };
         }
         
