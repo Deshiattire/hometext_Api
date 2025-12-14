@@ -115,9 +115,8 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
 Route::get('hero-banners', [BannerSliderController::class, 'index']);
 
 //==============Routes for Division [Working]==============
-Route::get('divisions', [DivisionController::class, 'index']);
-Route::get('district/{division_id}', [DistrictController::class, 'index']);
-Route::get('area/{district_id}', [AreaController::class, 'index']);
+Route::get('division', [DivisionController::class, 'index']);
+Route::get('area/{division_key}', [AreaController::class, 'index']);
 
 
 

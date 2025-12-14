@@ -14,8 +14,14 @@ class DivisionController extends Controller
      */
     final public function index():JsonResponse
     {
-        $divisions =(new Division())->getDivisionList();
-        return response()->json($divisions);
+        $divisions = (new Division())->getDivisionList();
+        $formatted = $divisions->map(function ($division) {
+            return [
+                'division_id' => $division->id,
+                'division_name' => $division->name,
+            ];
+        });
+        return response()->json($formatted);
     }
 
 }
