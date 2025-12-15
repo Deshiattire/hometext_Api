@@ -510,43 +510,43 @@ class OrderController extends Controller
     }
 
     /**
-     * Get all orders by customer_id
+     * Get all orders by user_id
      * 
      * @param Request $request
-     * @param int|null $customer_id
+     * @param int|null $user_id
      * @return JsonResponse
      */
-    public function getOrdersByCustomer(Request $request, $customer_id = null): JsonResponse
+    public function getOrdersByCustomer(Request $request, $user_id = null): JsonResponse
     {
         try {
-            $customerId = $customer_id ?? $request->input('customer_id');
+            $userId = $user_id ?? $request->input('user_id');
             
-            if (!$customerId) {
+            if (!$userId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Customer ID is required',
+                    'message' => 'User ID is required',
                 ], 400);
             }
 
-            if (!is_numeric($customerId)) {
+            if (!is_numeric($userId)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Customer ID must be a valid number',
+                    'message' => 'User ID must be a valid number',
                 ], 400);
             }
 
-            $customerId = (int) $customerId;
+            $userId = (int) $userId;
 
-            $customer = Customer::find($customerId);
+            $customer = Customer::where('user_id', $userId)->first();
             if (!$customer) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Customer not found with the provided customer ID',
-                    'customer_id' => $customerId,
+                    'message' => 'Customer not found with the provided user ID',
+                    'user_id' => $userId,
                 ], 404);
             }
             
-            $orders = Order::where('customer_id', $customerId)
+            $orders = Order::where('customer_id', $customer->id)
                 ->with([
                     'customer:id,name,phone,email',
                     'payment_method:id,name',

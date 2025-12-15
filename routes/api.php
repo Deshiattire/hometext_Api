@@ -209,7 +209,7 @@ Route::post('orders', [OrderController::class, 'createOrder']);
 // Specific routes must come before parameterized routes
 Route::get('orders/invoice/{invoiceId}', [OrderController::class, 'getOrderByInvoice'])->where('invoiceId', '.*');
 Route::get('orders/tracking', [OrderController::class, 'getTrackingStatus']);
-Route::get('orders/customer/{customer_id}', [OrderController::class, 'getOrdersByCustomer']);
+Route::get('orders/customer/{user_id}', [OrderController::class, 'getOrdersByCustomer']);
 Route::get('orders/{orderId}', [OrderController::class, 'show']);
 
 //==============Routes for Checkout [Working]==============
