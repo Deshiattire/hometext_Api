@@ -23,8 +23,8 @@ class OrderDetailsResource extends JsonResource
         }
         return [
             'id'=>$this->id,
-            'created_at'=>$this->created_at->toDayDateTimeString(),
-            'updated_at'=> $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString(): 'Not Updated',
+            'created_at'=>$this->created_at ? $this->created_at->toDayDateTimeString() : '',
+            'updated_at'=> $this->updated_at && $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString(): 'Not Updated',
             'customer'=>new CustomerDetailsResource($this->customer),
             'order_number'=>$this->order_number,
             'order_status'=>$this->order_status,
