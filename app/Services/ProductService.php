@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -480,17 +481,44 @@ class ProductService
     /**
      * Get bestsellers (sorted by purchase_count from analytics)
      * Cached for 1 hour
+     * 
+     * @param int $perPage
+     * @param bool $forceRefresh
+     * @param string|null $category Category name or slug to filter by
+     * @return LengthAwarePaginator
      */
-    public function getBestsellers(int $perPage = 20, bool $forceRefresh = false): LengthAwarePaginator
+    public function getBestsellers(int $perPage = 20, bool $forceRefresh = false, ?string $category = null): LengthAwarePaginator
     {
-        $cacheKey = 'products_bestsellers_' . $perPage;
+        $cacheKey = 'products_bestsellers_' . $perPage . ($category ? '_' . md5($category) : '');
         
         if ($forceRefresh) {
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, 3600, function () use ($perPage) {
+        return Cache::remember($cacheKey, 3600, function () use ($perPage, $category) {
             $query = $this->getBaseQuery();
+            
+            // Filter by category if provided
+            if ($category) {
+                $categoryModel = Category::query()
+                    ->where(function($q) use ($category) {
+                        $q->where('name', 'like', '%' . $category . '%')
+                          ->orWhere('slug', $category);
+                    })
+                    ->first();
+                
+                if ($categoryModel) {
+                    $query->where('category_id', $categoryModel->id);
+                } else {
+                    // If category not found, return empty result
+                    return new \Illuminate\Pagination\LengthAwarePaginator(
+                        collect([]),
+                        0,
+                        $perPage,
+                        1
+                    );
+                }
+            }
             
             // Check if product_analytics table exists
             if (DB::getSchemaBuilder()->hasTable('product_analytics')) {
