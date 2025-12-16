@@ -116,7 +116,10 @@ Route::get('hero-banners', [BannerSliderController::class, 'index']);
 
 //==============Routes for Division [Working]==============
 Route::get('division', [DivisionController::class, 'index']);
+Route::get('division/', [DivisionController::class, 'index']);
+Route::get('divisions', [DivisionController::class, 'index']);
 Route::get('area/{division_key}', [AreaController::class, 'index']);
+Route::get('area/{division_key}/', [AreaController::class, 'index']);
 
 //==============Routes for Shops [Working]==============
 Route::get('shops', [ShopController::class, 'getShops']);

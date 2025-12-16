@@ -16,12 +16,12 @@ class AreaController extends Controller
     final public function index(int $division_key):JsonResponse
     {
         $areas = (new Area())->getAreaByDivisionId($division_key);
-        $formatted = $areas->map(function ($area) {
+        $formatted = $areas->unique('id')->map(function ($area) {
             return [
                 'area_id' => $area->id,
                 'area_name' => $area->name,
             ];
-        });
+        })->values();
         return response()->json($formatted);
     }
 
