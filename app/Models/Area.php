@@ -31,7 +31,7 @@ class Area extends Model
             ->select('areas.id', 'areas.name')
             ->join('districts', 'areas.district_id', '=', 'districts.id')
             ->where('districts.division_id', $division_id)
-            ->distinct()
+            ->groupBy('areas.id', 'areas.name')
             ->get();
     }
 }

@@ -16,15 +16,17 @@ class OrderDetailsResource extends JsonResource
     public function toArray(Request $request): array
     {
         $payment_status = 'Unpaid';
-        if($this->payment_status == Order::PAID){
+        if($this->payment_status === Order::PAID){
             $payment_status = 'Paid';
-        }elseif ($this->payment_status == Order::PARTIAL_PAID){
+        }elseif ($this->payment_status === Order::PARTIAL_PAID){
             $payment_status = 'Partially Paid';
+        }elseif ($this->payment_status === null || $this->payment_status === '' || $this->payment_status === 0){
+            $payment_status = 'Unpaid';
         }
         return [
             'id'=>$this->id,
-            'created_at'=>$this->created_at->toDayDateTimeString(),
-            'updated_at'=> $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString(): 'Not Updated',
+            'created_at'=>$this->created_at ? $this->created_at->toDayDateTimeString() : '',
+            'updated_at'=> $this->updated_at && $this->created_at != $this->updated_at ? $this->updated_at->toDayDateTimeString(): 'Not Updated',
             'customer'=>new CustomerDetailsResource($this->customer),
             'order_number'=>$this->order_number,
             'order_status'=>$this->order_status,

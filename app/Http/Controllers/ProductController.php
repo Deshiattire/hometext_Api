@@ -241,7 +241,8 @@ class ProductController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 20);
-            $products = $productService->getBestsellers($perPage);
+            $category = $request->input('category');
+            $products = $productService->getBestsellers($perPage, false, $category);
 
             return $this->success([
                 'products' => ProductListResource::collection($products),
