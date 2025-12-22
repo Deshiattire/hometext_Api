@@ -239,6 +239,7 @@ Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
 //==============Routes for Customer (Public - No Auth Required)==============
 Route::post('customer-signup', [EcomUserController::class, 'registration']);
 Route::post('customer-login', [EcomUserController::class, 'UserLogin']);
+Route::post('customer-google-login', [EcomUserController::class, 'googleLogin']);
 
 //==============Routes for Customer (Protected - Auth Required)==============
 Route::middleware('auth:sanctum')->group(function () {
