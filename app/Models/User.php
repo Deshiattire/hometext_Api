@@ -56,6 +56,10 @@ class User extends Authenticatable
         'business_type',
         'password',
         'email_verified_at',
+        'google_id',
+        'oauth_provider',
+        'oauth_login_count',
+        'last_oauth_login',
     ];
 
     /**

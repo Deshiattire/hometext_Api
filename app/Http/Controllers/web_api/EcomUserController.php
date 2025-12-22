@@ -273,6 +273,170 @@ class EcomUserController extends Controller
     }
 
     /**
+     * Google OAuth Login/Signup
+     * Create or login a user via Google OAuth
+     */
+    public function googleLogin(Request $request): JsonResponse
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'email' => 'required|email|max:255',
+                'name' => 'required|string|max:255',
+                'google_id' => 'required|string|max:255',
+                'avatar' => 'nullable|url|max:500',
+                'user_type' => 'required|numeric|in:3'
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 400);
+        }
+
+        try {
+            $googleId = $request->input('google_id');
+            $email = $request->input('email');
+            $name = $request->input('name');
+            $avatar = $request->input('avatar');
+
+            // Step 1: Check if user exists with this Google ID
+            $user = User::where('google_id', $googleId)->first();
+
+            if ($user) {
+                // User exists with Google ID - update OAuth login tracking
+                $user->update([
+                    'last_oauth_login' => now(),
+                    'oauth_login_count' => $user->oauth_login_count + 1,
+                    'last_login_at' => now(),
+                    'last_login_ip' => request()->ip(),
+                    'login_count' => $user->login_count + 1,
+                ]);
+
+                // Log activity
+                $user->activityLogs()->create([
+                    'action' => 'google_login',
+                    'description' => 'User logged in via Google OAuth',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            } else {
+                // Step 2: Check if user exists with this email (account linking)
+                $user = User::where('email', $email)->first();
+
+                if ($user) {
+                    // Link Google account to existing email account
+                    $user->update([
+                        'google_id' => $googleId,
+                        'oauth_provider' => 'google',
+                        'oauth_login_count' => 1,
+                        'last_oauth_login' => now(),
+                        'last_login_at' => now(),
+                        'last_login_ip' => request()->ip(),
+                        'login_count' => $user->login_count + 1,
+                        'avatar' => $avatar ?? $user->avatar, // Update avatar if provided
+                    ]);
+
+                    // Log activity
+                    $user->activityLogs()->create([
+                        'action' => 'google_account_linked',
+                        'description' => 'Google account linked to existing user',
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                    ]);
+                } else {
+                    // Step 3: Create new user with Google data
+                    // Split name into first_name and last_name
+                    $nameParts = explode(' ', $name, 2);
+                    $firstName = $nameParts[0];
+                    $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
+
+                    $user = User::create([
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'email' => $email,
+                        'google_id' => $googleId,
+                        'avatar' => $avatar,
+                        'oauth_provider' => 'google',
+                        'user_type' => 'customer',
+                        'status' => 'active',
+                        'email_verified_at' => now(), // Google email is verified
+                        'oauth_login_count' => 1,
+                        'last_oauth_login' => now(),
+                        'last_login_at' => now(),
+                        'last_login_ip' => request()->ip(),
+                        'login_count' => 1,
+                        'password' => Hash::make(uniqid()), // Random password for Google users
+                    ]);
+
+                    // Assign customer role
+                    if (method_exists($user, 'assignRole')) {
+                        $user->assignRole('customer');
+                    }
+
+                    // Log activity
+                    $user->activityLogs()->create([
+                        'action' => 'google_registration',
+                        'description' => 'User registered via Google OAuth',
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                    ]);
+                }
+            }
+
+            // Check if account is locked
+            if ($user->isLocked()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account has been temporarily locked. Please try again later.'
+                ], 423);
+            }
+
+            // Check if account is active
+            if (!$user->isActive()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account is inactive. Please contact support.'
+                ], 403);
+            }
+
+            // Generate JWT token
+            $token = $user->createToken($user->email)->plainTextToken;
+
+            // Return response in the format expected by frontend
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'name' => $user->first_name . ($user->last_name ? ' ' . $user->last_name : ''),
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'avatar' => $user->avatar,
+                    'user_type' => $user->user_type,
+                    'roles' => method_exists($user, 'getRoleNames') ? $user->getRoleNames() : ['customer'],
+                ],
+                'message' => 'Login successful'
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Google OAuth Login Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'An error occurred during Google login',
+                'message' => 'Login failed'
+            ], 400);
+        }
+    }
+
+    /**
      * Customer logout
      * Deletes the current access token
      */
