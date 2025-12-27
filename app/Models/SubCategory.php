@@ -59,7 +59,7 @@ class SubCategory extends Model
         if (!empty($input['order_by'])) {
             $query->orderBy($input['order_by'], $input['direction'] ?? 'asc');
         }
-        return $query->with(['user:id,name', 'category:id,name'])->paginate($per_page);
+        return $query->with(['user:id,first_name,last_name', 'category:id,name'])->paginate($per_page);
     }
     /**
      *@return \Illuminate\Database\Eloquent\Relations\BelongsTo

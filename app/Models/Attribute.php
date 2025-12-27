@@ -23,7 +23,7 @@ class Attribute extends Model
      */
     final public function getAttributeList(): LengthAwarePaginator
     {
-        return self::query()->with(['user', 'value', 'value.user:id,name'])->orderBy('updated_at', 'desc')->paginate(50);
+        return self::query()->with(['user', 'value', 'value.user:id,first_name,last_name'])->orderBy('updated_at', 'desc')->paginate(50);
     }
     /**
      * @return BelongsTo

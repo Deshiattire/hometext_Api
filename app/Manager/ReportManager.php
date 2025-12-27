@@ -31,7 +31,15 @@ class ReportManager
         if ($auth->guard('admin')->check()){
             $this->is_admin = true;
         }
-        $this->sales_admin_id = $auth->user()->id;
+        
+        $user = $auth->user();
+        if ($user) {
+            $this->sales_admin_id = $user->id;
+        } else {
+            // Handle case when user is not authenticated
+            $this->sales_admin_id = 0;
+        }
+        
         $this->getProducts();
         $this->getOrders();
         $this->setTotalProduct();
@@ -44,8 +52,7 @@ class ReportManager
         $this->calculateTotalSaleToday();
         $this->calculateTotalPurchase();
         $this->calculatePurchaseToday();
-
-}
+    }
 
     private function getProducts()
     {

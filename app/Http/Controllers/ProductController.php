@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\IndexProductRequest;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\CategoryMenuResource;
 use App\Http\Resources\ProductDetailsResource;
 use App\Http\Resources\ProductListResource;
@@ -503,53 +504,132 @@ class ProductController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified product.
+     * Supports partial updates - only provided fields will be updated.
+     *
+     * @param UpdateProductRequest $request
+     * @param Product $product
+     * @return JsonResponse
      */
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
         try {
-            Log::debug('Request');
-            Log::debug($request->all());
             DB::beginTransaction();
 
-            // Update the basic product details if they are present in the request
-            $productData = $request->all();
-            $product->update($productData);
+            // Get only the validated data that was actually sent
+            $validatedData = $request->validated();
+
+            // Prepare update data for basic product fields
+            $updateData = [];
+            $productFields = [
+                'name', 'slug', 'sku', 'description', 'short_description',
+                'category_id', 'sub_category_id', 'child_sub_category_id',
+                'brand_id', 'supplier_id', 'country_id',
+                'cost', 'price', 'price_formula', 'field_limit',
+                'discount_fixed', 'discount_percent', 'discount_start', 'discount_end',
+                'stock','stock_by_location', 'stock_status', 'low_stock_threshold', 'manage_stock', 'allow_backorders',
+                'status', 'visibility',
+                'isFeatured', 'isNew', 'isTrending', 'is_bestseller',
+                'is_limited_edition', 'is_exclusive', 'is_eco_friendly',
+                'free_shipping', 'express_available',
+                'weight', 'length', 'width', 'height',
+                'tax_rate', 'tax_included',
+                'has_warranty', 'warranty_duration_months',
+                'returnable', 'return_period_days'
+            ];
+
+            // Only include fields that are present in the request
+            foreach ($productFields as $field) {
+                if (array_key_exists($field, $validatedData)) {
+                    $updateData[$field] = $validatedData[$field];
+                }
+            }
+
+            // Add updated_by_id
+            $updateData['updated_by_id'] = auth()->id() ?? 1;
+
+            // Update the product with only the provided fields
+            if (!empty($updateData)) {
+                $product->update($updateData);
+            }
 
             // Update attributes if provided
-            if ($request->has('attributes')) {
-                (new ProductAttribute())->updateAttribute($request->input('attributes'), $product);
+            if (array_key_exists('attributes', $validatedData)) {
+                (new ProductAttribute())->updateAttribute($validatedData['attributes'], $product);
             }
 
             // Update specifications if provided
-            if ($request->has('specifications')) {
-                (new ProductSpecification())->updateProductSpecification($request->input('specifications'), $product);
+            if (array_key_exists('specifications', $validatedData)) {
+                (new ProductSpecification())->updateProductSpecification($validatedData['specifications'], $product);
             }
 
-            if ($request->has('meta')) {
-                (new ProductSeoMetaData())->updateSeoMata($request->input('meta'), $product);
+            // Update SEO metadata if provided
+            if (array_key_exists('meta', $validatedData)) {
+                (new ProductSeoMetaData())->updateSeoMata($validatedData['meta'], $product);
             }
 
-            if ($request->has('shop_ids') && $request->has('shop_quantities')) {
-                $shopsData = $request->input('shop_quantities');
-
+            // Update shop quantities if provided
+            if (array_key_exists('shop_quantities', $validatedData) && !empty($validatedData['shop_quantities'])) {
                 $shopQuantityData = [];
 
-                foreach ($shopsData as $shopQuantity) {
+                foreach ($validatedData['shop_quantities'] as $shopQuantity) {
                     $shopId = $shopQuantity['shop_id'];
                     $quantity = $shopQuantity['quantity'];
-
                     $shopQuantityData[$shopId] = ['quantity' => $quantity];
                 }
 
+                // Sync shop quantities
                 $product->shops()->sync($shopQuantityData);
             }
+
+            // Clear product caches
+            Product::clearProductFilterCaches();
+
             DB::commit();
-            return response()->json(['msg' => 'Product Updated Successfully', 'cls' => 'success', 'product_id' => $product->id]);
-        } catch (\Throwable $e) {
-            info("PRODUCT_UPDATE_FAILED", ['data' => $request->all(), 'error' => $e->getMessage()]);
+
+            // Reload the product with relationships for response
+            $product->load([
+                'category:id,name',
+                'sub_category:id,name',
+                'child_sub_category:id,name',
+                'brand:id,name',
+                'supplier:id,name',
+                'country:id,name',
+                'product_attributes.attribute:id,name',
+                'product_attributes.attributeValue:id,name',
+                'product_specifications',
+                'seo_meta',
+                'shops:id,name'
+            ]);
+
+            return $this->success(
+                [
+                    'product' => new ProductDetailsResource($product),
+                    'updated_fields' => array_keys($updateData)
+                ],
+                'Product updated successfully'
+            );
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            return response()->json(['msg' => $e->getMessage(), 'cls' => 'warning']);
+            return $this->error(
+                'Validation failed',
+                $e->errors(),
+                422
+            );
+        } catch (\Throwable $e) {
+            Log::error('PRODUCT_UPDATE_FAILED', [
+                'product_id' => $product->id,
+                'data' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            DB::rollBack();
+            return $this->error(
+                'Failed to update product',
+                config('app.debug') ? $e->getMessage() : 'An error occurred while updating the product',
+                500
+            );
         }
     }
 

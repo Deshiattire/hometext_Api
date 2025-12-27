@@ -325,7 +325,7 @@ class Category extends Model
             $query->ordered();
         }
         
-        return $query->with('user:id,name')->paginate($per_page);
+        return $query->with('user:id,first_name,last_name')->paginate($per_page);
     }
 
     /**

@@ -9,6 +9,14 @@ use Illuminate\Http\JsonResponse;
 
 class AttributeValueController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
+    final public function index(): JsonResponse
+    {
+        $values = AttributeValue::with('attribute:id,name')->orderBy('updated_at', 'desc')->get();
+        return response()->json($values);
+    }
 
     /**
      * @param StoreAttributeValueRequest $request
