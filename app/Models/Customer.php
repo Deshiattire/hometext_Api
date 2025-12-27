@@ -29,12 +29,12 @@ class Customer extends Model
 
     public function getCustomerBySearch($search)
     {
+        $searchTerm = $search['search'] ?? '';
         return self::query()
         ->select('id', 'name', 'phone')
-        ->where('name', 'like', '%' .$search['search'].'%' )
-        ->orWhere('phone', 'like', '%' .$search['search'].'%' )
+        ->where('name', 'like', '%' . $searchTerm . '%' )
+        ->orWhere('phone', 'like', '%' . $searchTerm . '%' )
         ->take(15)
-        ->get()
-        ;
+        ->get();
     }
 }

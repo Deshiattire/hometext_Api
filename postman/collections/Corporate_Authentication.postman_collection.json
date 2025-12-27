@@ -1,0 +1,386 @@
+{
+  "info": {
+    "name": "Corporate Authentication API",
+    "description": "API endpoints for corporate customer registration, login, and management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Corporate - Public",
+      "item": [
+        {
+          "name": "Corporate Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@abctrading.com\",\n  \"password\": \"SecurePass123\",\n  \"conf_password\": \"SecurePass123\",\n  \"phone\": \"01712345678\",\n  \"phone_country_code\": \"+880\",\n  \n  \"company_legal_name\": \"ABC Trading Ltd\",\n  \"trade_license_number\": \"TL-123456\",\n  \"vat_registration_number\": \"VAT-789012\",\n  \"incorporation_date\": \"2020-01-15\",\n  \n  \"primary_contact_name\": \"John Doe\",\n  \"primary_contact_email\": \"john.doe@abctrading.com\",\n  \"primary_contact_phone\": \"+880171234567\",\n  \n  \"industry\": \"Textile & Apparel\",\n  \"employee_count\": 50,\n  \"annual_revenue\": 50000000,\n  \n  \"credit_limit\": 0,\n  \"payment_terms\": \"prepaid\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate-register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Corporate Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.authorization && jsonData.data.authorization.token) {",
+                  "        pm.environment.set('corporate_token', jsonData.data.authorization.token);",
+                  "        console.log('Corporate token saved:', jsonData.data.authorization.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@abctrading.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate-login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Corporate - Protected",
+      "item": [
+        {
+          "name": "Get Corporate Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{corporate_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Corporate Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{corporate_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"01798765432\",\n  \"primary_contact_name\": \"Jane Doe\",\n  \"primary_contact_email\": \"jane.doe@abctrading.com\",\n  \"primary_contact_phone\": \"+880179876543\",\n  \"industry\": \"Textile Manufacturing\",\n  \"employee_count\": 75,\n  \"annual_revenue\": 75000000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Corporate Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{corporate_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - Corporate Management",
+      "item": [
+        {
+          "name": "Get All Corporate Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate?status=pending&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending, active, suspended, rejected"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Search by company name, email, or trade license"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Corporate Registrations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate/pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Corporate Account Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate/{{corporate_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "{{corporate_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Corporate Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credit_limit\": 100000,\n  \"payment_terms\": \"net_30\",\n  \"admin_notes\": \"Verified trade license and business references\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate/{{corporate_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "{{corporate_id}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Corporate Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejection_reason\": \"Unable to verify trade license. Please resubmit with correct documentation.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate/{{corporate_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "{{corporate_id}}", "reject"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend Corporate Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suspension_reason\": \"Payment overdue by 90 days. Please contact accounts department.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate/{{corporate_id}}/suspend",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "{{corporate_id}}", "suspend"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reactivate Corporate Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate/{{corporate_id}}/reactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "{{corporate_id}}", "reactivate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Credit Terms",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credit_limit\": 150000,\n  \"payment_terms\": \"net_45\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate/{{corporate_id}}/credit-terms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate", "{{corporate_id}}", "credit-terms"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "corporate_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "corporate_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

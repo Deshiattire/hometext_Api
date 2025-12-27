@@ -142,12 +142,20 @@ class ChildSubCategoryController extends Controller
         return $photo_name;
     }
     /**
-     * @param int $category_id
+     * Get child sub categories by category ID (optional)
+     * @param int|null $category_id
      * @return JsonResponse
      */
-    final public function get_child_sub_category_list(int $category_id):JsonResponse
+    final public function get_child_sub_category_list(?int $category_id = null):JsonResponse
     {
-        $childSubCategories = (new ChildSubCategory())->getChildSubCategoryIdAndName($category_id);
+        if ($category_id === null) {
+            // Return all child sub categories if no category_id provided
+            $childSubCategories = ChildSubCategory::select('id', 'name', 'sub_category_id')
+                ->where('status', ChildSubCategory::STATUS_ACTIVE)
+                ->get();
+        } else {
+            $childSubCategories = (new ChildSubCategory())->getChildSubCategoryIdAndName($category_id);
+        }
         return response()->json($childSubCategories);
     }
 }

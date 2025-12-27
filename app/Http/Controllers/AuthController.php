@@ -23,82 +23,118 @@ class AuthController extends Controller
      */
     final public function login(AuthRequest $request): JsonResponse
     {
+        // Determine user type and fetch user
         if($request->input('user_type') == self::ADMIN_USER){
             $user = (new User())->getUserEmailOrPhone($request->all());
             $role = self::ADMIN_USER;
         }else{
-            $user= (new SalesManager())->getUserEmailOrPhone($request->all());
+            $user = (new SalesManager())->getUserEmailOrPhone($request->all());
             $role = self::SALES_MANAGER;
         }
         
+        // Check if user exists
         if(!$user) {
             throw ValidationException::withMessages([
-                'email'=> ['The Provided credentials are incorrect']
+                'email'=> ['The provided credentials are incorrect']
             ]);
         }
 
-        // Check if account is locked
+        // Verify user type matches for User model (admin should have 'admin' user_type)
+        if($user instanceof User && $role == self::ADMIN_USER) {
+            if($user->user_type !== 'admin') {
+                throw ValidationException::withMessages([
+                    'email'=> ['Access denied. This account does not have admin privileges.']
+                ]);
+            }
+        }
+
+        // Check if account is locked (Admin/User only)
         if($user instanceof User && $user->isLocked()) {
             throw ValidationException::withMessages([
-                'email'=> ['Your account has been temporarily locked. Please try again later.']
+                'email'=> ['Your account has been temporarily locked due to multiple failed login attempts. Please try again later.']
             ]);
         }
 
-        // Check if account is active
+        // Check if account is active (Admin/User only)
         if($user instanceof User && !$user->isActive()) {
             throw ValidationException::withMessages([
                 'email'=> ['Your account is inactive. Please contact support.']
             ]);
         }
+
+        // Check if sales manager is active
+        if($user instanceof SalesManager && $user->status != SalesManager::STATUS_ACTIVE) {
+            throw ValidationException::withMessages([
+                'email'=> ['Your account is inactive. Please contact administrator.']
+            ]);
+        }
         
-        if(Hash::check($request->input('password'), $user->password)){
-            // Ensure user has the correct role assigned (if using Spatie Permission)
-            if (method_exists($user, 'assignRole')) {
+        // Verify password
+        if(!Hash::check($request->input('password'), $user->password)){
+            // Record failed login attempt
+            if($user instanceof User) {
+                $user->recordFailedLogin();
+            }
+            
+            throw ValidationException::withMessages([
+                'email'=> ['The provided credentials are incorrect']
+            ]);
+        }
+        
+        // Password is correct - proceed with login
+        
+        // Ensure user has the correct role assigned (only for User model with Spatie Permission)
+        if ($user instanceof User && method_exists($user, 'assignRole')) {
+            try {
                 if ($role == self::ADMIN_USER && !$user->hasRole('admin')) {
                     $user->assignRole('admin');
-                } elseif ($role == self::SALES_MANAGER && !$user->hasRole('sales_manager')) {
-                    $user->assignRole('sales_manager');
                 }
+            } catch (\Exception $e) {
+                // Role doesn't exist - skip assignment
             }
-            
-            // Record login activity for User model
-            if($user instanceof User) {
-                $user->recordLogin();
-            }
-            
-            $branch = null;
-            if($role == self::SALES_MANAGER){
-                $branch = (new Shop())->getShopDetailsById($user->shop_id);
-            } elseif($user instanceof User) {
-                // Get primary shop for admin users
-                $primaryShop = $user->primaryShop();
-                if($primaryShop) {
-                    $branch = (new Shop())->getShopDetailsById($primaryShop->id);
-                }
-            }
-            
-            $user_data['id'] = $user->id;
-            $user_data['token'] = $user->createToken($user->email)->plainTextToken;
-            $user_data['name'] = $user->name ?? ($user->first_name . ' ' . ($user->last_name ?? ''));
-            $user_data['phone'] = $user->phone;
-            $user_data['photo'] = $user->avatar ?? null;
-            $user_data['email'] = $user->email;
-            $user_data['role'] = $role;
-            $user_data['roles'] = method_exists($user, 'getRoleNames') ? $user->getRoleNames() : [];
-            $user_data['permissions'] = method_exists($user, 'getAllPermissions') ? $user->getAllPermissions()->pluck('name') : [];
-            $user_data['employee_type'] = $user->employee_type ?? null;
-            $user_data['branch'] = new ShopListResource($branch);
-            return response()->json($user_data);
         }
         
-        // Record failed login attempt
+        // Record login activity for User model
         if($user instanceof User) {
-            $user->recordFailedLogin();
+            $user->recordLogin();
         }
         
-        throw ValidationException::withMessages([
-            'email'=> ['The Provided credentials are incorrect']
-        ]);
+        // Get branch/shop information
+        $branch = null;
+        if($role == self::SALES_MANAGER){
+            $branch = (new Shop())->getShopDetailsById($user->shop_id);
+        } elseif($user instanceof User) {
+            // Get primary shop for admin users
+            $primaryShop = $user->primaryShop();
+            if($primaryShop) {
+                $branch = (new Shop())->getShopDetailsById($primaryShop->id);
+            }
+        }
+        
+        // Prepare user data for response
+        $user_data = [];
+        $user_data['token'] = $user->createToken($user->email)->plainTextToken;
+        
+        // Handle different name formats
+        if($user instanceof User) {
+            $user_data['name'] = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+            $user_data['first_name'] = $user->first_name ?? null;
+            $user_data['last_name'] = $user->last_name ?? null;
+        } else {
+            $user_data['name'] = $user->name ?? null;
+        }
+        
+        $user_data['phone'] = $user->phone ?? null;
+        $user_data['photo'] = $user->avatar ?? $user->photo ?? null;
+        $user_data['email'] = $user->email ?? null;
+        $user_data['role'] = $role;
+        $user_data['user_type'] = $role;
+        $user_data['roles'] = method_exists($user, 'getRoleNames') ? $user->getRoleNames() : [];
+        $user_data['permissions'] = method_exists($user, 'getAllPermissions') ? $user->getAllPermissions()->pluck('name') : [];
+        $user_data['employee_type'] = $user->employee_type ?? null;
+        $user_data['branch'] = $branch ? new ShopListResource($branch) : null;
+        
+        return response()->json($user_data);
     }
 
      /**

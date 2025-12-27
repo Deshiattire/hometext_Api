@@ -19,4 +19,12 @@ class AttributeValue extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    /**
+     * @return BelongsTo
+     */
+    final public function attribute():BelongsTo
+    {
+        return $this->belongsTo(Attribute::class);
+    }
 }

@@ -102,7 +102,7 @@ Route::put('update-review/{id}', [ProductReviewController::class, 'update']);
 Route::delete('delete-review/{id}', [ProductReviewController::class, 'destroy']);
 
 /** ===============Admin Routes for Reviews =============== */
-Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
+Route::group(['middleware' => ['admin']], function () {
     Route::get('reviews/pending', [ProductReviewController::class, 'getPending']);
     Route::post('reviews/{id}/approve', [ProductReviewController::class, 'approve']);
     Route::post('reviews/{id}/reject', [ProductReviewController::class, 'reject']);
@@ -128,49 +128,10 @@ Route::get('shops/{shop_id}', [ShopController::class, 'getShopProducts']);
 
 
 /** ===============Admin Routes =============== */
-Route::group(['middleware' => ['auth:sanctum', 'auth:admin']], function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::get('get-attribute-list', [AttributeController::class, 'get_attribute_list']);
-    Route::get('get-supplier-list', [SupplierController::class, 'get_provider_list']);
-    Route::get('get-country-list', [CountryController::class, 'get_country_list']);
-    Route::get('get-brand-list', [BrandController::class, 'get_brand_list']);
-    Route::get('get-category-list', [CategoryController::class, 'get_category_list']);
-    Route::get('get-shop-list', [ShopController::class, 'get_shop_list']);
-    Route::apiResource('product', ProductController::class);
-    Route::get('get-product-list-for-bar-code', [ProductController::class, 'get_product_list_for_bar_code']);
-    Route::put('/products/{product}', [ProductController::class, 'update']);
-    Route::get('get-sub-category-list/{category_id}', [SubCategoryController::class, 'get_sub_category_list']);
-    Route::post('product-photo-upload/{id}', [ProductPhotoController::class, 'store']);
-    Route::group(['prefix' => 'transfers'], function () {
-        Route::post('/', [ProductTransferController::class, 'store']); // Create a new transfer
-        Route::get('/', [ProductTransferController::class, 'index']);   // Retrieve a list of transfers
-        Route::get('/{transfer}', [ProductTransferController::class, 'show']); // Retrieve a specific transfer
-        Route::put('/{transfer}/approve', [ProductTransferController::class, 'approve']); // Approve a transfer
-        Route::put('/{transfer}/reject', [ProductTransferController::class, 'reject']); // Reject a transfer
-    });
-    Route::apiResource('category', CategoryController::class);
-    Route::apiResource('sub-category', SubCategoryController::class);
-    Route::apiResource('brand', BrandController::class);
-    Route::apiResource('supplier', SupplierController::class);
-    Route::apiResource('attribute', AttributeController::class);
-    Route::apiResource('attribute-value', AttributeValueController::class);
-    Route::apiResource('photo', ProductPhotoController::class);
-    Route::apiResource('shop', ShopController::class);
-    Route::apiResource('customer', CustomerController::class);
-    Route::apiResource('order', OrderController::class);
-    Route::get('get-payment-methods', [PaymentMethodController::class, 'index']);
-    // Removed duplicate products/{id} route - using public route instead
-});
-
-/** ===============Sales Manager Routes =============== */
-Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function () {
+Route::group(['middleware' => ['admin_or_sales']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::apiResource('sales-manager', SalesManagerController::class);
     Route::post('product/{id}/duplicate', [ProductController::class, 'duplicate']);
-    Route::apiResource('product', ProductController::class);
-    Route::get('get-product-columns', [ProductController::class, 'get_product_columns']);
-    Route::get('get-product-list-for-bar-code', [ProductController::class, 'get_product_list_for_bar_code']);
-    Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::get('get-attribute-list', [AttributeController::class, 'get_attribute_list']);
     Route::get('get-supplier-list', [SupplierController::class, 'get_provider_list']);
     Route::get('get-country-list', [CountryController::class, 'get_country_list']);
@@ -179,6 +140,10 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-sub-category-list', [SubCategoryController::class, 'get_sub_category_list_fc']);
     Route::get('get-child-sub-category-list', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::get('get-shop-list', [ShopController::class, 'get_shop_list']);
+    Route::apiResource('product', ProductController::class);
+    Route::get('get-product-columns', [ProductController::class, 'get_product_columns']);
+    Route::get('get-product-list-for-bar-code', [ProductController::class, 'get_product_list_for_bar_code']);
+    Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::get('get-sub-category-list/{category_id}', [SubCategoryController::class, 'get_sub_category_list']);
     Route::get('get-child-sub-category-list/{category_id}', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::post('product-photo-upload/{id}', [ProductPhotoController::class, 'store']);
@@ -204,9 +169,22 @@ Route::group(['middleware' => ['auth:sanctum', 'auth:sales_manager']], function 
     Route::get('get-payment-methods', [PaymentMethodController::class, 'index']);
     Route::get('get-reports', [ReportController::class, 'index']);
     Route::get('get-add-product-data', [ProductController::class, 'get_add_product_data']);
+    
+    // Corporate Management Routes
+    Route::prefix('corporate')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CorporateManagementController::class, 'index']);
+        Route::get('/pending', [\App\Http\Controllers\CorporateManagementController::class, 'pending']);
+        Route::get('/{id}', [\App\Http\Controllers\CorporateManagementController::class, 'show']);
+        Route::post('/{id}/approve', [\App\Http\Controllers\CorporateManagementController::class, 'approve']);
+        Route::post('/{id}/reject', [\App\Http\Controllers\CorporateManagementController::class, 'reject']);
+        Route::post('/{id}/suspend', [\App\Http\Controllers\CorporateManagementController::class, 'suspend']);
+        Route::post('/{id}/reactivate', [\App\Http\Controllers\CorporateManagementController::class, 'reactivate']);
+        Route::get('/payment-terms-options', [\App\Http\Controllers\CorporateManagementController::class, 'getPaymentTermsOptions']);
+        Route::get('/{id}/credit-terms', [\App\Http\Controllers\CorporateManagementController::class, 'getCreditTerms']);
+        Route::put('/{id}/credit-terms', [\App\Http\Controllers\CorporateManagementController::class, 'updateCreditTerms']);
+    });
+    
     // Removed duplicate products/{id} route - using public route instead
-
-
 });
 
 Route::get('product/duplicate/@_jkL_qwErtOp~_lis/{id}', [ProductController::class, 'duplicate']);
@@ -241,6 +219,10 @@ Route::post('customer-signup', [EcomUserController::class, 'registration']);
 Route::post('customer-login', [EcomUserController::class, 'UserLogin']);
 Route::post('customer-google-login', [EcomUserController::class, 'googleLogin']);
 
+//==============Routes for Corporate (Public - No Auth Required)==============
+Route::post('corporate-register', [\App\Http\Controllers\web_api\CorporateAuthController::class, 'register']);
+Route::post('corporate-login', [\App\Http\Controllers\web_api\CorporateAuthController::class, 'login']);
+
 //==============Routes for Customer (Protected - Auth Required)==============
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('my-profile', [EcomUserController::class, 'myprofile']);
@@ -249,6 +231,13 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Order Details - requires authentication
     Route::get('my-order', [OrderDetailsController::class, 'myorder']);
+});
+
+//==============Routes for Corporate (Protected - Auth Required)==============
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('corporate-profile', [\App\Http\Controllers\web_api\CorporateAuthController::class, 'profile']);
+    Route::put('corporate-profile', [\App\Http\Controllers\web_api\CorporateAuthController::class, 'updateProfile']);
+    Route::post('corporate-logout', [\App\Http\Controllers\web_api\CorporateAuthController::class, 'logout']);
 });
 // Route::post('user-signout',[EcomUserController::class,'signout']);
 

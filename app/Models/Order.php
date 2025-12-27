@@ -37,7 +37,18 @@ class Order extends Model
         );
         if(!$is_admin){
             $user = $auth->user();
-            $shopId = $user instanceof \App\Models\User ? $user->shop_id : $user->shop_id;
+            // Get shop_id based on user type
+            if ($user instanceof \App\Models\SalesManager) {
+                $shopId = $user->shop_id;
+            } elseif ($user instanceof \App\Models\User) {
+                // For User model, get primary shop
+                $primaryShop = $user->primaryShop();
+                $shopId = $primaryShop ? $primaryShop->id : null;
+            } else {
+                $shopId = null;
+            }
+            
+            // Filter by shop if shop_id is available
             if($shopId) {
                 $query->where('shop_id', $shopId);
             }
@@ -77,7 +88,16 @@ class Order extends Model
         return $price;
        }else{
 
-           $shopId = $auth instanceof \App\Models\User ? $auth->shop_id : $auth->shop_id;
+           // Get shop_id based on user type
+           if ($auth instanceof \App\Models\SalesManager) {
+               $shopId = $auth->shop_id;
+           } elseif ($auth instanceof \App\Models\User) {
+               $primaryShop = $auth->primaryShop();
+               $shopId = $primaryShop ? $primaryShop->id : null;
+           } else {
+               $shopId = null;
+           }
+           
            $order_data = [
                'customer_id' =>$input['orderSummary']['customer_id'],
                'sales_manager_id'=> $auth->id,
