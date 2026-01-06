@@ -19,9 +19,16 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://hometexbd.ltd', 'https://staging.hometexbd.ltd', 'https://admin.hometexbangladesh.org'],
+    /*
+     * Do NOT hardcode origins when using cookies.
+     * Use pattern-based matching for all subdomains.
+     */
+    'allowed_origins' => [],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '^https:\/\/.*\.hometexbangladesh\.org$',
+        '^http:\/\/localhost(:[0-9]+)?$'
+    ],
 
     'allowed_headers' => ['*'],
 
@@ -29,6 +36,8 @@ return [
 
     'max_age' => 0,
 
+    /*
+     * Required for Sanctum cookie authentication
+     */
     'supports_credentials' => true,
-
 ];
