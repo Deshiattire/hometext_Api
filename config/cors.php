@@ -14,17 +14,14 @@ return [
     | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
     |
     */
-
+    
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [],
+    'allowed_origins' => ['https://admin.hometexbangladesh.org', 'https://staging.hometexbangladesh.org', 'https://www.hometexbangladesh.org'],
 
-    'allowed_origins_patterns' => [
-        'https:\/\/.*\.hometexbangladesh\.org',
-        'http:\/\/localhost(:[0-9]+)?'
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
