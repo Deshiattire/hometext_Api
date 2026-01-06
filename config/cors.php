@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://hometexbd.ltd', 'http://staging.hometexbd.ltd', 'https://adminpanel-coral-six.vercel.app'],
+    'allowed_origins' => ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://hometexbd.ltd', 'https://staging.hometexbd.ltd', 'https://admin.hometexbangladesh.org'],
 
     'allowed_origins_patterns' => [],
 
