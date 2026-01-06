@@ -19,16 +19,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    /*
-     * Dynamically allow all subdomains of hometexbangladesh.org
-     */
-    'allowed_origins' => function ($origin) {
-        if (!$origin) return false;
+    'allowed_origins' => [],
 
-        return str_ends_with($origin, '.hometexbangladesh.org')
-            || $origin === 'https://hometexbangladesh.org'
-            || str_starts_with($origin, 'http://localhost');
-    },
+    'allowed_origins_patterns' => [
+        'https:\/\/.*\.hometexbangladesh\.org',
+        'http:\/\/localhost(:[0-9]+)?'
+    ],
 
     'allowed_headers' => ['*'],
 
@@ -36,8 +32,6 @@ return [
 
     'max_age' => 0,
 
-    /*
-     * Required for Sanctum cookie authentication
-     */
     'supports_credentials' => true,
+
 ];
