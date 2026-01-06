@@ -20,15 +20,15 @@ return [
     'allowed_methods' => ['*'],
 
     /*
-     * Do NOT hardcode origins when using cookies.
-     * Use pattern-based matching for all subdomains.
+     * Dynamically allow all subdomains of hometexbangladesh.org
      */
-    'allowed_origins' => [],
+    'allowed_origins' => function ($origin) {
+        if (!$origin) return false;
 
-    'allowed_origins_patterns' => [
-        '^https:\/\/.*\.hometexbangladesh\.org$',
-        '^http:\/\/localhost(:[0-9]+)?$'
-    ],
+        return str_ends_with($origin, '.hometexbangladesh.org')
+            || $origin === 'https://hometexbangladesh.org'
+            || str_starts_with($origin, 'http://localhost');
+    },
 
     'allowed_headers' => ['*'],
 
