@@ -295,6 +295,9 @@ class ProductDetailsResource extends JsonResource
             ]),
             'vendor' => null, // Can be added if vendor table exists
             
+            // ===== FAQS =====
+            'faqs' => $this->getFaqsData(),
+            
             // ===== TIMESTAMPS & AUDIT =====
             'created_at' => $this->created_at ? $this->created_at->toIso8601String() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toIso8601String() : null,
@@ -334,6 +337,22 @@ class ProductDetailsResource extends JsonResource
             '2_star' => $reviews->where('rating', 2)->count(),
             '1_star' => $reviews->where('rating', 1)->count(),
         ];
+    }
+    
+    /**
+     * Get FAQs data
+     */
+    private function getFaqsData(): array
+    {
+        $faqs = $this->faqs ?? collect();
+        
+        return $faqs->map(function ($faq) {
+            return [
+                'id' => $faq->id,
+                'question' => $faq->question ?? '',
+                'answer' => $faq->answer ?? '',
+            ];
+        })->toArray();
     }
     
     /**

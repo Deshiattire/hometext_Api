@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\web_api\CheckOutController;
 use App\Http\Controllers\web_api\CategoryApiController;
 use App\Http\Controllers\web_api\EcomUserController;
+use App\Http\Controllers\web_api\GuestCheckoutController;
 use App\Http\Controllers\web_api\OrderDetailsController;
 use App\Http\Controllers\web_api\PaymentController;
 use App\Http\Controllers\web_api\WishListController;
@@ -82,6 +83,7 @@ Route::get('products/category/{categoryId}', [ProductController::class, 'byCateg
 Route::get('products/brand/{brandId}', [ProductController::class, 'byBrand']);
 
 // Product detail and related endpoints - Must come after filter routes
+Route::get('products/{id}/navigation', [ProductController::class, 'navigation']);
 Route::get('products/{id}/similar', [ProductController::class, 'similar']);
 Route::get('products/{id}/recommendations', [ProductController::class, 'recommendations']);
 
@@ -201,12 +203,24 @@ Route::get('orders/{orderId}', [OrderController::class, 'show']);
 Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
 
+//==============Routes for Guest Checkout [Working]==============
+// Guest checkout - no authentication required
+Route::prefix('guest')->group(function () {
+    // Place order as guest
+    Route::post('checkout', [GuestCheckoutController::class, 'checkout']);
+    
+    // Track guest order (by token or order number + email)
+    Route::get('orders/track', [GuestCheckoutController::class, 'trackOrder']);
+    
+    // Get order tracking URL by order number and email
+    Route::post('orders/lookup', [GuestCheckoutController::class, 'getOrderByEmailAndNumber']);
+});
+
 //==============Routes for Payment [Working]==============
 Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);
 Route::post('payment-success', [PaymentController::class, 'paymentsuccess']);
 Route::get('payment-cancel', [PaymentController::class, 'paymentcancel']);
 Route::get('payment-fail', [PaymentController::class, 'paymentfail']);
-Route::post('check-out', [CheckOutController::class, 'checkout']);
 Route::post('check-out-logein-user', [CheckOutController::class, 'checkoutbyloginuser']);
 // Route::get('my-order', [CheckOutController::class, 'myorder']);
 Route::get('get-payment-details', [PaymentController::class, 'getpaymentdetails']);

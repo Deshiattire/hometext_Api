@@ -28,7 +28,7 @@ class Product extends Model
     public function getAttribute($key)
     {
         // List of relationships that might have missing tables
-        $optionalRelationships = ['approvedReviews', 'videos', 'bulkPricing', 'analytics', 'relatedProducts', 'tags', 'variations', 'seo_meta'];
+        $optionalRelationships = ['approvedReviews', 'videos', 'bulkPricing', 'analytics', 'relatedProducts', 'tags', 'variations', 'seo_meta', 'faqs'];
         
         // If accessing an optional relationship, check if table exists first
         if (in_array($key, $optionalRelationships)) {
@@ -41,11 +41,12 @@ class Product extends Model
                 'tags' => 'product_tags',
                 'variations' => 'product_variations',
                 'seo_meta' => 'product_seo_meta_data',
+                'faqs' => 'product_wise_faqs',
             ];
             
             if (isset($tableMap[$key]) && !Schema::hasTable($tableMap[$key])) {
                 // Return empty collection for HasMany relationships
-                if (in_array($key, ['approvedReviews', 'videos', 'bulkPricing', 'relatedProducts', 'tags', 'variations', 'seo_meta'])) {
+                if (in_array($key, ['approvedReviews', 'videos', 'bulkPricing', 'relatedProducts', 'tags', 'variations', 'seo_meta', 'faqs'])) {
                     return new Collection([]);
                 }
                 // Return null for HasOne relationships
@@ -60,7 +61,7 @@ class Product extends Model
         } catch (QueryException $e) {
             // If error is due to missing table, return empty collection or null
             if (str_contains($e->getMessage(), "doesn't exist") || str_contains($e->getMessage(), 'Base table or view not found')) {
-                if (in_array($key, ['approvedReviews', 'videos', 'bulkPricing', 'relatedProducts', 'tags', 'variations', 'seo_meta'])) {
+                if (in_array($key, ['approvedReviews', 'videos', 'bulkPricing', 'relatedProducts', 'tags', 'variations', 'seo_meta', 'faqs'])) {
                     return new Collection([]);
                 }
                 if (in_array($key, ['analytics'])) {
@@ -500,6 +501,14 @@ class Product extends Model
             ->where('relation_type', 'frequently_bought_together')
             ->where('is_active', true)
             ->orderBy('sort_order');
+    }
+
+    /**
+     * Get the FAQs for this product.
+     */
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(ProductWiseFaq::class);
     }
 
     /**
