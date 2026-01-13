@@ -1,0 +1,323 @@
+{
+	"info": {
+		"_postman_id": "guest-checkout-collection",
+		"name": "Guest Checkout API",
+		"description": "API collection for testing guest checkout functionality",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "guestToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderNumber",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Guest Checkout - Place Order (COD)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.order) {",
+							"        pm.collectionVariables.set('guestToken', jsonData.data.order.guestToken);",
+							"        pm.collectionVariables.set('orderNumber', jsonData.data.order.orderNumber);",
+							"        console.log('Guest Token saved:', jsonData.data.order.guestToken);",
+							"        console.log('Order Number saved:', jsonData.data.order.orderNumber);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer\": {\n        \"email\": \"guest.customer@example.com\",\n        \"phone\": \"01712345678\",\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"acceptsMarketing\": false\n    },\n    \"items\": [\n        {\n            \"id\": 30,\n            \"quantity\": 2\n        },\n        {\n            \"id\": 31,\n            \"quantity\": 1\n        }\n    ],\n    \"shippingAddress\": {\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"phone\": \"01712345678\",\n        \"email\": \"guest.customer@example.com\",\n        \"addressLine1\": \"House 123, Road 5, Block A\",\n        \"addressLine2\": \"Banani\",\n        \"city\": \"Dhaka\",\n        \"state\": \"Dhaka Division\",\n        \"postalCode\": \"1213\",\n        \"country\": \"Bangladesh\"\n    },\n    \"billingSameAsShipping\": true,\n    \"paymentMethod\": {\n        \"type\": \"cod\",\n        \"transactionId\": null\n    },\n    \"notes\": \"Please call before delivery. Gate code is 1234.\",\n    \"deliveryType\": 0\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/checkout",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "checkout"]
+				},
+				"description": "Place a guest order with Cash on Delivery payment method"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Guest Checkout - Place Order (bKash)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.order) {",
+							"        pm.collectionVariables.set('guestToken', jsonData.data.order.guestToken);",
+							"        pm.collectionVariables.set('orderNumber', jsonData.data.order.orderNumber);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer\": {\n        \"email\": \"bkash.customer@example.com\",\n        \"phone\": \"01812345678\",\n        \"firstName\": \"Rahim\",\n        \"lastName\": \"Ahmed\",\n        \"acceptsMarketing\": true\n    },\n    \"items\": [\n        {\n            \"id\": 32,\n            \"quantity\": 1\n        }\n    ],\n    \"shippingAddress\": {\n        \"firstName\": \"Rahim\",\n        \"lastName\": \"Ahmed\",\n        \"phone\": \"01812345678\",\n        \"email\": \"bkash.customer@example.com\",\n        \"addressLine1\": \"Flat 4B, Sunrise Tower\",\n        \"addressLine2\": \"Gulshan-2\",\n        \"city\": \"Dhaka\",\n        \"state\": \"Dhaka Division\",\n        \"postalCode\": \"1212\",\n        \"country\": \"Bangladesh\"\n    },\n    \"billingAddress\": {\n        \"firstName\": \"Rahim\",\n        \"lastName\": \"Ahmed\",\n        \"phone\": \"01812345678\",\n        \"addressLine1\": \"Flat 4B, Sunrise Tower\",\n        \"city\": \"Dhaka\",\n        \"postalCode\": \"1212\",\n        \"country\": \"Bangladesh\"\n    },\n    \"billingSameAsShipping\": false,\n    \"paymentMethod\": {\n        \"type\": \"bkash\",\n        \"transactionId\": \"TXN123456789\"\n    },\n    \"notes\": \"Gift wrap please\",\n    \"deliveryType\": 1\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/checkout",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "checkout"]
+				},
+				"description": "Place a guest order with bKash mobile payment"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Guest Checkout - Minimal Required Fields",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.order) {",
+							"        pm.collectionVariables.set('guestToken', jsonData.data.order.guestToken);",
+							"        pm.collectionVariables.set('orderNumber', jsonData.data.order.orderNumber);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer\": {\n        \"email\": \"minimal@example.com\",\n        \"phone\": \"01912345678\",\n        \"firstName\": \"Karim\"\n    },\n    \"items\": [\n        {\n            \"id\": 39,\n            \"quantity\": 1\n        }\n    ],\n    \"shippingAddress\": {\n        \"firstName\": \"Karim\",\n        \"phone\": \"01912345678\",\n        \"addressLine1\": \"123 Test Street\",\n        \"city\": \"Dhaka\",\n        \"postalCode\": \"1000\",\n        \"country\": \"Bangladesh\"\n    },\n    \"paymentMethod\": {\n        \"type\": \"cod\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/checkout",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "checkout"]
+				},
+				"description": "Place order with only required fields - minimum data needed"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Track Order - By Token",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/guest/orders/track?token={{guestToken}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "orders", "track"],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{guestToken}}"
+						}
+					]
+				},
+				"description": "Track guest order using the token received after checkout"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Track Order - By Email & Order Number",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/guest/orders/track?orderNumber={{orderNumber}}&email=guest.customer@example.com",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "orders", "track"],
+					"query": [
+						{
+							"key": "orderNumber",
+							"value": "{{orderNumber}}"
+						},
+						{
+							"key": "email",
+							"value": "guest.customer@example.com"
+						}
+					]
+				},
+				"description": "Track guest order using order number and email address"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Lookup Order - Get Tracking URL",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"orderNumber\": \"{{orderNumber}}\",\n    \"email\": \"guest.customer@example.com\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/orders/lookup",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "orders", "lookup"]
+				},
+				"description": "Look up order by email and order number to get tracking URL"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Test Validation - Missing Email",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer\": {\n        \"phone\": \"01712345678\",\n        \"firstName\": \"Test\"\n    },\n    \"items\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1\n        }\n    ],\n    \"shippingAddress\": {\n        \"firstName\": \"Test\",\n        \"phone\": \"01712345678\",\n        \"addressLine1\": \"123 Street\",\n        \"city\": \"Dhaka\",\n        \"postalCode\": \"1000\",\n        \"country\": \"Bangladesh\"\n    },\n    \"paymentMethod\": {\n        \"type\": \"cod\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/checkout",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "checkout"]
+				},
+				"description": "Test validation - should return error for missing email"
+			},
+			"response": []
+		},
+		{
+			"name": "8. Test Validation - Empty Cart",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer\": {\n        \"email\": \"test@example.com\",\n        \"phone\": \"01712345678\",\n        \"firstName\": \"Test\"\n    },\n    \"items\": [],\n    \"shippingAddress\": {\n        \"firstName\": \"Test\",\n        \"phone\": \"01712345678\",\n        \"addressLine1\": \"123 Street\",\n        \"city\": \"Dhaka\",\n        \"postalCode\": \"1000\",\n        \"country\": \"Bangladesh\"\n    },\n    \"paymentMethod\": {\n        \"type\": \"cod\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/checkout",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "checkout"]
+				},
+				"description": "Test validation - should return error for empty cart"
+			},
+			"response": []
+		},
+		{
+			"name": "9. Test Validation - Invalid Payment Method",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer\": {\n        \"email\": \"test@example.com\",\n        \"phone\": \"01712345678\",\n        \"firstName\": \"Test\"\n    },\n    \"items\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1\n        }\n    ],\n    \"shippingAddress\": {\n        \"firstName\": \"Test\",\n        \"phone\": \"01712345678\",\n        \"addressLine1\": \"123 Street\",\n        \"city\": \"Dhaka\",\n        \"postalCode\": \"1000\",\n        \"country\": \"Bangladesh\"\n    },\n    \"paymentMethod\": {\n        \"type\": \"invalid_method\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/guest/checkout",
+					"host": ["{{baseUrl}}"],
+					"path": ["guest", "checkout"]
+				},
+				"description": "Test validation - should return error for invalid payment method"
+			},
+			"response": []
+		}
+	]
+}

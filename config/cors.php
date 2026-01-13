@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://admin.hometexbangladesh.org', 'https://staging.hometexbangladesh.org', 'https://www.hometexbangladesh.org','http://localhost:3000', 'http://127.0.0.1:3000'],
+    'allowed_origins' => ['http://localhost:3000','https://admin.hometexbangladesh.org', 'https://staging.hometexbangladesh.org', 'https://www.hometexbangladesh.org'],
 
     'allowed_origins_patterns' => [],
 

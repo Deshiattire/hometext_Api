@@ -12,7 +12,25 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $guarded =[];
+    protected $guarded = [];
+    
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'is_guest_order' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays/JSON.
+     */
+    protected $hidden = [
+        'guest_token', // Hide token in responses for security
+        'ip_address',
+        'user_agent',
+    ];
 
     public const STATUS_PENDING = 1;
     public const STATUS_PROCESSED = 2;

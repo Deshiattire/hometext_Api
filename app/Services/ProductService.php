@@ -263,6 +263,12 @@ class ProductService
             };
         }
         
+        if (DB::getSchemaBuilder()->hasTable('product_wise_faqs')) {
+            $with['faqs'] = function($q) {
+                $q->select('id', 'product_id', 'question', 'answer');
+            };
+        }
+        
         try {
             return Product::query()->with($with)->findOrFail($id);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -270,7 +276,7 @@ class ProductService
             if (str_contains($e->getMessage(), "doesn't exist") || str_contains($e->getMessage(), 'Base table or view not found')) {
                 // Remove all optional relationships and try again
                 $with = array_filter($with, function($key) {
-                    return !in_array($key, ['videos', 'tags', 'variations', 'approvedReviews', 'bulkPricing', 'analytics', 'relatedProducts', 'seo_meta']);
+                    return !in_array($key, ['videos', 'tags', 'variations', 'approvedReviews', 'bulkPricing', 'analytics', 'relatedProducts', 'seo_meta', 'faqs']);
                 }, ARRAY_FILTER_USE_KEY);
                 return Product::query()->with($with)->findOrFail($id);
             }
@@ -379,6 +385,12 @@ class ProductService
             };
         }
         
+        if (DB::getSchemaBuilder()->hasTable('product_wise_faqs')) {
+            $with['faqs'] = function($q) {
+                $q->select('id', 'product_id', 'question', 'answer');
+            };
+        }
+        
         try {
             return Product::query()->with($with)->where('slug', $slug)->firstOrFail();
         } catch (\Illuminate\Database\QueryException $e) {
@@ -386,7 +398,7 @@ class ProductService
             if (str_contains($e->getMessage(), "doesn't exist") || str_contains($e->getMessage(), 'Base table or view not found')) {
                 // Remove all optional relationships and try again
                 $with = array_filter($with, function($key) {
-                    return !in_array($key, ['videos', 'tags', 'variations', 'approvedReviews', 'bulkPricing', 'analytics', 'relatedProducts', 'seo_meta']);
+                    return !in_array($key, ['videos', 'tags', 'variations', 'approvedReviews', 'bulkPricing', 'analytics', 'relatedProducts', 'seo_meta', 'faqs']);
                 }, ARRAY_FILTER_USE_KEY);
                 return Product::query()->with($with)->where('slug', $slug)->firstOrFail();
             }

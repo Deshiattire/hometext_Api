@@ -10,6 +10,7 @@ use App\Http\Resources\ProductDetailsResource;
 use App\Http\Resources\ProductListResource;
 use App\Services\CategoryService;
 use App\Services\ProductService;
+use App\Services\ProductNavigationService;
 use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
@@ -84,6 +85,12 @@ class ProductController extends Controller
 
             $products = $productService->getPaginatedProducts($filters, $perPage);
 
+            // Create navigation list for contextual prev/next on product pages
+            $navigationService = app(ProductNavigationService::class);
+            $orderBy = $filters['order_by'] ?? 'created_at';
+            $direction = $filters['direction'] ?? 'desc';
+            $navigationList = $navigationService->createNavigationList($filters, $orderBy, $direction);
+
             return $this->success([
                 'products' => ProductListResource::collection($products),
                 'pagination' => [
@@ -94,7 +101,8 @@ class ProductController extends Controller
                     'from' => $products->firstItem(),
                     'to' => $products->lastItem(),
                     'has_more' => $products->hasMorePages(),
-                ]
+                ],
+                'navigation' => $navigationList,
             ], 'Products retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve products', $e->getMessage(), 500);
@@ -105,18 +113,38 @@ class ProductController extends Controller
      * Display the specified product
      *
      * @param int $id
+     * @param Request $request
      * @param ProductService $productService
+     * @param ProductNavigationService $navigationService
      * @return JsonResponse
      */
-    public function show(int $id, ProductService $productService): JsonResponse
+    public function show(int $id, Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $product = $productService->getProductById($id);
             
-            return $this->success(
-                new ProductDetailsResource($product),
-                'Product retrieved successfully'
-            );
+            // Get navigation context if list_id provided
+            $listId = $request->query('list');
+            $position = $request->query('pos') !== null ? (int) $request->query('pos') : null;
+            
+            $navigation = null;
+            if (config('product_navigation.include_in_product_response', true)) {
+                if ($listId) {
+                    $navigation = $navigationService->getProductNavigation($id, $listId, $position);
+                } elseif (config('product_navigation.enable_category_fallback', false)) {
+                    $navigation = $navigationService->getCategoryFallbackNavigation($id);
+                }
+            }
+            
+            $response = [
+                'product' => new ProductDetailsResource($product),
+            ];
+            
+            if ($navigation) {
+                $response['navigation'] = $navigation;
+            }
+            
+            return $this->success($response, 'Product retrieved successfully');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->error('Product not found', null, 404);
         } catch (\Exception $e) {
@@ -128,18 +156,38 @@ class ProductController extends Controller
      * Display the specified product by slug
      *
      * @param string $slug
+     * @param Request $request
      * @param ProductService $productService
+     * @param ProductNavigationService $navigationService
      * @return JsonResponse
      */
-    public function showBySlug(string $slug, ProductService $productService): JsonResponse
+    public function showBySlug(string $slug, Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $product = $productService->getProductBySlug($slug);
             
-            return $this->success(
-                new ProductDetailsResource($product),
-                'Product retrieved successfully'
-            );
+            // Get navigation context if list_id provided
+            $listId = $request->query('list');
+            $position = $request->query('pos') !== null ? (int) $request->query('pos') : null;
+            
+            $navigation = null;
+            if (config('product_navigation.include_in_product_response', true)) {
+                if ($listId) {
+                    $navigation = $navigationService->getProductNavigation($product->id, $listId, $position);
+                } elseif (config('product_navigation.enable_category_fallback', false)) {
+                    $navigation = $navigationService->getCategoryFallbackNavigation($product->id);
+                }
+            }
+            
+            $response = [
+                'product' => new ProductDetailsResource($product),
+            ];
+            
+            if ($navigation) {
+                $response['navigation'] = $navigation;
+            }
+            
+            return $this->success($response, 'Product retrieved successfully');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->error('Product not found', null, 404);
         } catch (\Exception $e) {
@@ -154,11 +202,18 @@ class ProductController extends Controller
      * @param ProductService $productService
      * @return JsonResponse
      */
-    public function featured(Request $request, ProductService $productService): JsonResponse
+    public function featured(Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $perPage = $request->input('per_page', 20);
             $products = $productService->getFeaturedProducts($perPage);
+
+            // Create navigation list for this section
+            $navigation = $navigationService->createNavigationListFromProducts(
+                $products, 
+                'featured',
+                ['per_page' => $perPage]
+            );
 
             return $this->success([
                 'products' => ProductListResource::collection($products),
@@ -168,7 +223,8 @@ class ProductController extends Controller
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
                     'has_more' => $products->hasMorePages(),
-                ]
+                ],
+                'navigation' => $navigation,
             ], 'Featured products retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve featured products', $e->getMessage(), 500);
@@ -182,11 +238,18 @@ class ProductController extends Controller
      * @param ProductService $productService
      * @return JsonResponse
      */
-    public function newArrivals(Request $request, ProductService $productService): JsonResponse
+    public function newArrivals(Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $perPage = $request->input('per_page', 20);
             $products = $productService->getNewArrivals($perPage);
+
+            // Create navigation list for this section
+            $navigation = $navigationService->createNavigationListFromProducts(
+                $products,
+                'new_arrivals',
+                ['per_page' => $perPage]
+            );
 
             return $this->success([
                 'products' => ProductListResource::collection($products),
@@ -196,7 +259,8 @@ class ProductController extends Controller
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
                     'has_more' => $products->hasMorePages(),
-                ]
+                ],
+                'navigation' => $navigation,
             ], 'New arrivals retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve new arrivals', $e->getMessage(), 500);
@@ -210,11 +274,18 @@ class ProductController extends Controller
      * @param ProductService $productService
      * @return JsonResponse
      */
-    public function trending(Request $request, ProductService $productService): JsonResponse
+    public function trending(Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $perPage = $request->input('per_page', 20);
             $products = $productService->getTrendingProducts($perPage);
+
+            // Create navigation list for this section
+            $navigation = $navigationService->createNavigationListFromProducts(
+                $products,
+                'trending',
+                ['per_page' => $perPage]
+            );
 
             return $this->success([
                 'products' => ProductListResource::collection($products),
@@ -224,7 +295,8 @@ class ProductController extends Controller
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
                     'has_more' => $products->hasMorePages(),
-                ]
+                ],
+                'navigation' => $navigation,
             ], 'Trending products retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve trending products', $e->getMessage(), 500);
@@ -238,12 +310,19 @@ class ProductController extends Controller
      * @param ProductService $productService
      * @return JsonResponse
      */
-    public function bestsellers(Request $request, ProductService $productService): JsonResponse
+    public function bestsellers(Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $perPage = $request->input('per_page', 20);
             $category = $request->input('category');
             $products = $productService->getBestsellers($perPage, false, $category);
+
+            // Create navigation list for this section
+            $navigation = $navigationService->createNavigationListFromProducts(
+                $products,
+                'bestsellers',
+                ['per_page' => $perPage, 'category' => $category]
+            );
 
             return $this->success([
                 'products' => ProductListResource::collection($products),
@@ -253,7 +332,8 @@ class ProductController extends Controller
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
                     'has_more' => $products->hasMorePages(),
-                ]
+                ],
+                'navigation' => $navigation,
             ], 'Bestsellers retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve bestsellers', $e->getMessage(), 500);
@@ -267,11 +347,18 @@ class ProductController extends Controller
      * @param ProductService $productService
      * @return JsonResponse
      */
-    public function onSale(Request $request, ProductService $productService): JsonResponse
+    public function onSale(Request $request, ProductService $productService, ProductNavigationService $navigationService): JsonResponse
     {
         try {
             $perPage = $request->input('per_page', 20);
             $products = $productService->getOnSaleProducts($perPage);
+
+            // Create navigation list for this section
+            $navigation = $navigationService->createNavigationListFromProducts(
+                $products,
+                'on_sale',
+                ['per_page' => $perPage]
+            );
 
             return $this->success([
                 'products' => ProductListResource::collection($products),
@@ -281,10 +368,52 @@ class ProductController extends Controller
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
                     'has_more' => $products->hasMorePages(),
-                ]
+                ],
+                'navigation' => $navigation,
             ], 'Products on sale retrieved successfully');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve products on sale', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get product navigation context (prev/next)
+     * 
+     * This endpoint can be used when navigation needs to be fetched separately
+     * from the product details, or when refreshing navigation after list changes.
+     *
+     * @param int $id Product ID
+     * @param Request $request
+     * @param ProductNavigationService $navigationService
+     * @return JsonResponse
+     */
+    public function navigation(int $id, Request $request, ProductNavigationService $navigationService): JsonResponse
+    {
+        try {
+            $listId = $request->query('list');
+            $position = $request->query('pos') !== null ? (int) $request->query('pos') : null;
+            $useFallback = $request->query('fallback', false);
+
+            if ($listId) {
+                $navigation = $navigationService->getProductNavigation($id, $listId, $position);
+            } elseif ($useFallback || config('product_navigation.enable_category_fallback', false)) {
+                $orderBy = $request->query('order_by', config('product_navigation.fallback_order_by', 'created_at'));
+                $direction = $request->query('direction', config('product_navigation.fallback_direction', 'desc'));
+                $navigation = $navigationService->getCategoryFallbackNavigation($id, $orderBy, $direction);
+            } else {
+                $navigation = [
+                    'prev' => null,
+                    'next' => null,
+                    'position' => null,
+                    'total' => null,
+                    'list_id' => null,
+                    'message' => 'No navigation context provided. Pass list_id or enable fallback.',
+                ];
+            }
+
+            return $this->success($navigation, 'Navigation retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve navigation', $e->getMessage(), 500);
         }
     }
 
