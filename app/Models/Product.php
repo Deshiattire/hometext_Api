@@ -90,6 +90,7 @@ class Product extends Model
         'discount_start',
         'name',
         'price',
+        'old_price',
         'price_formula',
         'field_limit',
         'sku',

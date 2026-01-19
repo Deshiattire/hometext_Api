@@ -120,6 +120,11 @@ Route::get('hero-banners', [BannerSliderController::class, 'index']);
 Route::get('division', [DivisionController::class, 'index']);
 Route::get('division/', [DivisionController::class, 'index']);
 Route::get('divisions', [DivisionController::class, 'index']);
+
+//==============Routes for Districts [Working]==============
+Route::get('districts/{division_id}', [DistrictController::class, 'index']);
+Route::get('division/{division_id}/districts', [DistrictController::class, 'index']);
+
 Route::get('area/{division_key}', [AreaController::class, 'index']);
 Route::get('area/{division_key}/', [AreaController::class, 'index']);
 
@@ -149,6 +154,7 @@ Route::group(['middleware' => ['admin_or_sales']], function () {
     Route::get('get-sub-category-list/{category_id}', [SubCategoryController::class, 'get_sub_category_list']);
     Route::get('get-child-sub-category-list/{category_id}', [ChildSubCategoryController::class, 'get_child_sub_category_list']);
     Route::post('product-photo-upload/{id}', [ProductPhotoController::class, 'store']);
+
     Route::group(['prefix' => 'transfers'], function () {
         Route::post('/', [ProductTransferController::class, 'store']); // Create a new transfer
         Route::get('/', [ProductTransferController::class, 'index']);   // Retrieve a list of transfers
@@ -156,6 +162,7 @@ Route::group(['middleware' => ['admin_or_sales']], function () {
         Route::put('/{transfer}/approve', [ProductTransferController::class, 'approve']); // Approve a transfer
         Route::put('/{transfer}/reject', [ProductTransferController::class, 'reject']); // Reject a transfer
     });
+    
     Route::apiResource('category', CategoryController::class);
     Route::apiResource('sub-category', SubCategoryController::class);
     Route::apiResource('child-sub-category', ChildSubCategoryController::class);
