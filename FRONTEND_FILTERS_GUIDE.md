@@ -730,3 +730,5 @@ export default function SearchPage() {
 ---
 
 This guide covers all available filters and how to implement them in your Next.js frontend. All filters work through the same `/api/products` endpoint with query parameters!
+
+

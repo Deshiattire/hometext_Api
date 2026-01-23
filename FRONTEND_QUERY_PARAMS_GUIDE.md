@@ -955,3 +955,5 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ---
 
 This guide covers all the ways to pass query parameters from your Next.js frontend to your Laravel backend API. Choose the method that best fits your use case!
+
+

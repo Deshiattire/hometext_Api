@@ -131,3 +131,5 @@ GET /api/products?stock_status=in_stock
 ## 🚀 Frontend Implementation
 
 See `FRONTEND_FILTERS_GUIDE.md` for complete Next.js implementation examples.
+
+

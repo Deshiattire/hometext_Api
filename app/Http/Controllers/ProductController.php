@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -44,6 +45,7 @@ class ProductController extends Controller
     {
         try {
             $perPage = $request->validated()['per_page'] ?? 20;
+            $page = $request->validated()['page'] ?? 1;
             
             $filters = [
                 'search' => $request->validated()['search'] ?? null,
@@ -83,6 +85,18 @@ class ProductController extends Controller
                 return $value !== null && $value !== '';
             });
 
+            // Generate cache key based on filters and pagination
+            $cacheKey = 'products_list_' . md5(json_encode($filters) . "_page_{$page}_perPage_{$perPage}");
+            $cacheTTL = 300; // 5 minutes cache
+
+            // Try to get from cache first
+            $cachedResponse = Cache::get($cacheKey);
+            if ($cachedResponse) {
+                return response()->json($cachedResponse)
+                    ->header('Cache-Control', 'public, max-age=60')
+                    ->header('X-Cache', 'HIT');
+            }
+
             $products = $productService->getPaginatedProducts($filters, $perPage);
 
             // Create navigation list for contextual prev/next on product pages
@@ -91,19 +105,34 @@ class ProductController extends Controller
             $direction = $filters['direction'] ?? 'desc';
             $navigationList = $navigationService->createNavigationList($filters, $orderBy, $direction);
 
-            return $this->success([
-                'products' => ProductListResource::collection($products),
-                'pagination' => [
-                    'current_page' => $products->currentPage(),
-                    'last_page' => $products->lastPage(),
-                    'per_page' => $products->perPage(),
-                    'total' => $products->total(),
-                    'from' => $products->firstItem(),
-                    'to' => $products->lastItem(),
-                    'has_more' => $products->hasMorePages(),
+            $responseData = [
+                'success' => true,
+                'message' => 'Products retrieved successfully',
+                'data' => [
+                    'products' => ProductListResource::collection($products)->resolve(),
+                    'pagination' => [
+                        'current_page' => $products->currentPage(),
+                        'last_page' => $products->lastPage(),
+                        'per_page' => $products->perPage(),
+                        'total' => $products->total(),
+                        'from' => $products->firstItem(),
+                        'to' => $products->lastItem(),
+                        'has_more' => $products->hasMorePages(),
+                    ],
+                    'navigation' => $navigationList,
                 ],
-                'navigation' => $navigationList,
-            ], 'Products retrieved successfully');
+                'meta' => [
+                    'cached' => false,
+                    'cache_ttl' => $cacheTTL,
+                ],
+            ];
+
+            // Cache the response
+            Cache::put($cacheKey, array_merge($responseData, ['meta' => ['cached' => true, 'cache_ttl' => $cacheTTL]]), $cacheTTL);
+
+            return response()->json($responseData)
+                ->header('Cache-Control', 'public, max-age=60')
+                ->header('X-Cache', 'MISS');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve products', $e->getMessage(), 500);
         }

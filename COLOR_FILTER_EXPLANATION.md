@@ -178,3 +178,5 @@ The color filter **only searches in variations**:
 ```
 
 Searching `?color=red` will find this product because one of its variations has "Red" color.
+
+
