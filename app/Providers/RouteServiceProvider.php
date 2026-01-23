@@ -41,7 +41,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting(): void
     {
+        // General API rate limit - increased for better UX
         RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Higher limit for product listing (public, cacheable)
+        RateLimiter::for('products', function (Request $request) {
+            return Limit::perMinute(200)->by($request->ip());
+        });
+
+        // Strict limit for authenticated actions
+        RateLimiter::for('authenticated', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
     }

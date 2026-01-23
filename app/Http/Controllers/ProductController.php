@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -44,6 +45,7 @@ class ProductController extends Controller
     {
         try {
             $perPage = $request->validated()['per_page'] ?? 20;
+            $page = $request->validated()['page'] ?? 1;
             
             $filters = [
                 'search' => $request->validated()['search'] ?? null,
@@ -83,6 +85,18 @@ class ProductController extends Controller
                 return $value !== null && $value !== '';
             });
 
+            // Generate cache key based on filters and pagination
+            $cacheKey = 'products_list_' . md5(json_encode($filters) . "_page_{$page}_perPage_{$perPage}");
+            $cacheTTL = 300; // 5 minutes cache
+
+            // Try to get from cache first
+            $cachedResponse = Cache::get($cacheKey);
+            if ($cachedResponse) {
+                return response()->json($cachedResponse)
+                    ->header('Cache-Control', 'public, max-age=60')
+                    ->header('X-Cache', 'HIT');
+            }
+
             $products = $productService->getPaginatedProducts($filters, $perPage);
 
             // Create navigation list for contextual prev/next on product pages
@@ -91,19 +105,34 @@ class ProductController extends Controller
             $direction = $filters['direction'] ?? 'desc';
             $navigationList = $navigationService->createNavigationList($filters, $orderBy, $direction);
 
-            return $this->success([
-                'products' => ProductListResource::collection($products),
-                'pagination' => [
-                    'current_page' => $products->currentPage(),
-                    'last_page' => $products->lastPage(),
-                    'per_page' => $products->perPage(),
-                    'total' => $products->total(),
-                    'from' => $products->firstItem(),
-                    'to' => $products->lastItem(),
-                    'has_more' => $products->hasMorePages(),
+            $responseData = [
+                'success' => true,
+                'message' => 'Products retrieved successfully',
+                'data' => [
+                    'products' => ProductListResource::collection($products)->resolve(),
+                    'pagination' => [
+                        'current_page' => $products->currentPage(),
+                        'last_page' => $products->lastPage(),
+                        'per_page' => $products->perPage(),
+                        'total' => $products->total(),
+                        'from' => $products->firstItem(),
+                        'to' => $products->lastItem(),
+                        'has_more' => $products->hasMorePages(),
+                    ],
+                    'navigation' => $navigationList,
                 ],
-                'navigation' => $navigationList,
-            ], 'Products retrieved successfully');
+                'meta' => [
+                    'cached' => false,
+                    'cache_ttl' => $cacheTTL,
+                ],
+            ];
+
+            // Cache the response
+            Cache::put($cacheKey, array_merge($responseData, ['meta' => ['cached' => true, 'cache_ttl' => $cacheTTL]]), $cacheTTL);
+
+            return response()->json($responseData)
+                ->header('Cache-Control', 'public, max-age=60')
+                ->header('X-Cache', 'MISS');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve products', $e->getMessage(), 500);
         }
@@ -654,15 +683,16 @@ class ProductController extends Controller
                 'name', 'slug', 'sku', 'description', 'short_description',
                 'category_id', 'sub_category_id', 'child_sub_category_id',
                 'brand_id', 'supplier_id', 'country_id',
-                'cost', 'price', 'price_formula', 'field_limit',
+                'cost', 'price', 'old_price', 'price_formula', 'field_limit',
                 'discount_fixed', 'discount_percent', 'discount_start', 'discount_end',
                 'stock','stock_by_location', 'stock_status', 'low_stock_threshold', 'manage_stock', 'allow_backorders',
+                'minimum_order_quantity', 'maximum_order_quantity', 'restock_date',
                 'status', 'visibility',
                 'isFeatured', 'isNew', 'isTrending', 'is_bestseller',
                 'is_limited_edition', 'is_exclusive', 'is_eco_friendly',
                 'free_shipping', 'express_available',
                 'weight', 'length', 'width', 'height',
-                'tax_rate', 'tax_included',
+                'tax_rate', 'tax_included', 'tax_class',
                 'has_warranty', 'warranty_duration_months',
                 'returnable', 'return_period_days'
             ];
@@ -724,8 +754,8 @@ class ProductController extends Controller
                 'brand:id,name',
                 'supplier:id,name',
                 'country:id,name',
-                'product_attributes.attribute:id,name',
-                'product_attributes.attributeValue:id,name',
+                'product_attributes.attributes:id,name',
+                'product_attributes.attribute_value:id,name',
                 'product_specifications',
                 'seo_meta',
                 'shops:id,name'

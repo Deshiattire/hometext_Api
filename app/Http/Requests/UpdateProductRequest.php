@@ -56,6 +56,7 @@ class UpdateProductRequest extends FormRequest
             // Pricing
             'cost' => 'sometimes|numeric|min:0',
             'price' => 'sometimes|numeric|min:0',
+            'old_price' => 'sometimes|nullable|numeric|min:0',
             'price_formula' => 'sometimes|nullable|string|max:255',
             'field_limit' => 'sometimes|nullable|string|max:255',
 
@@ -71,6 +72,9 @@ class UpdateProductRequest extends FormRequest
             'low_stock_threshold' => 'sometimes|nullable|numeric|min:0',
             'manage_stock' => 'sometimes|boolean',
             'allow_backorders' => 'sometimes|boolean',
+            'minimum_order_quantity' => 'sometimes|nullable|numeric|min:1',
+            'maximum_order_quantity' => 'sometimes|nullable|numeric|min:1',
+            'restock_date' => 'sometimes|nullable|date',
 
             // Status & Visibility
             'status' => 'sometimes|numeric|in:0,1',
@@ -96,6 +100,7 @@ class UpdateProductRequest extends FormRequest
             // Tax & Warranty
             'tax_rate' => 'sometimes|nullable|numeric|min:0|max:100',
             'tax_included' => 'sometimes|boolean',
+            'tax_class' => 'sometimes|nullable|string|max:50',
             'has_warranty' => 'sometimes|boolean',
             'warranty_duration_months' => 'sometimes|nullable|numeric|min:0',
             'returnable' => 'sometimes|boolean',

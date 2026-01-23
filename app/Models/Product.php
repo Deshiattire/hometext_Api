@@ -90,6 +90,7 @@ class Product extends Model
         'discount_start',
         'name',
         'price',
+        'old_price',
         'price_formula',
         'field_limit',
         'sku',
@@ -215,6 +216,18 @@ class Product extends Model
             Cache::forget("products_trending_{$perPage}");
             Cache::forget("products_bestsellers_{$perPage}");
             Cache::forget("products_on_sale_{$perPage}");
+        }
+
+        // Clear product list caches (pattern-based clearing)
+        // For file cache driver, we clear by forgetting known patterns
+        try {
+            // Clear cached product lists - uses cache tags if available (Redis/Memcached)
+            if (method_exists(Cache::getStore(), 'tags')) {
+                Cache::tags(['products', 'product_list'])->flush();
+            }
+        } catch (\Exception $e) {
+            // Silently fail if cache clearing fails
+            \Illuminate\Support\Facades\Log::warning('Failed to clear product list caches: ' . $e->getMessage());
         }
     }
 
